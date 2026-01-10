@@ -60,9 +60,6 @@ Nếu sử dụng **ResNet / ViT / DINO**:
 pip install torch torchvision torchaudio
 pip install timm
 ```
-
-> ⚠️ Lưu ý: với GPU, hãy cài PyTorch đúng CUDA version theo hướng dẫn tại [https://pytorch.org](https://pytorch.org)
-
 ---
 
 ## 4. Cấu trúc thư mục (đề xuất)
