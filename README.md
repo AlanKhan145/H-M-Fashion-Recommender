@@ -169,12 +169,3 @@ Các metric thường dùng:
 3. Bật GPU (nếu cần)
 4. Run All
 
-> Kaggle giúp tránh lỗi RAM và tăng tốc I/O đáng kể.
-
----
-
-
-
----
-
-📌 *README này tập trung vào cài đặt & chạy dự án. Có thể mở rộng thêm phần mô tả thuật toán nếu cần.*
