@@ -52,7 +52,7 @@ pip install numpy pandas scipy scikit-learn tqdm pillow matplotlib
 pip install implicit lightfm
 ```
 
-### 3.3. Xử lý ảnh & Deep Learning (tuỳ chọn)
+### 3.3. Xử lý ảnh & Deep Learning 
 
 Nếu sử dụng **ResNet / ViT / DINO**:
 
@@ -60,33 +60,7 @@ Nếu sử dụng **ResNet / ViT / DINO**:
 pip install torch torchvision torchaudio
 pip install timm
 ```
----
-
-## 4. Cấu trúc thư mục (đề xuất)
-
-```text
-h-m-fashion-recommender/
-│
-├── data/
-│   ├── articles.csv
-│   ├── customers.csv
-│   ├── transactions_train.csv
-│   └── images/
-│
-├── notebooks/
-│   └── h-m-fashion-recommender-01.ipynb
-│
-├── outputs/
-│   ├── features/
-│   └── submissions/
-│
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 5. Chuẩn bị dữ liệu
+## 4. Chuẩn bị dữ liệu
 
 1. Tải dữ liệu từ Kaggle:
    **H&M Personalized Fashion Recommendations**
@@ -102,9 +76,9 @@ h-m-fashion-recommender/
 
 ---
 
-## 6. Chạy Notebook
+## 5 Chạy Notebook
 
-### 6.1. Mở Jupyter Notebook
+### 5.1. Mở Jupyter Notebook
 
 ```bash
 jupyter notebook
@@ -122,7 +96,7 @@ Mở file:
 notebooks/h-m-fashion-recommender-01.ipynb
 ```
 
-### 6.2. Thứ tự chạy
+### 5.2. Thứ tự chạy
 
 1. Load & preprocess dữ liệu
 2. Trích xuất feature (text / image / embedding)
@@ -132,7 +106,7 @@ notebooks/h-m-fashion-recommender-01.ipynb
 
 ---
 
-## 7. Tạo file submission
+## 6. Tạo file submission
 
 Định dạng chuẩn Kaggle:
 
@@ -146,20 +120,17 @@ customer_id,prediction
 
 ---
 
-## 8. Đánh giá mô hình (offline)
+## 7. Đánh giá mô hình (offline)
 
-Các metric thường dùng:
+Các metric :
 
 * `MAP@12` (metric chính của Kaggle)
 * `Precision@12`
 * `Recall@12`
 * `F1@12`
 
-> Lưu ý: Kaggle **không dùng Accuracy truyền thống** cho bài toán recommender.
 
----
-
-## 9. Chạy trên Kaggle Notebook (khuyến nghị)
+## 8. Chạy trên Kaggle Notebook 
 
 1. Upload notebook `.ipynb`
 2. Add dataset **H&M Personalized Fashion Recommendations**
