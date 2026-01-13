@@ -1,0 +1,8 @@
+bs4
+requests
+lxml
+jupyter
+selenium
+pandas
+pymongo
+

@@ -1,0 +1,23 @@
+best_cfg:
+  k_patch: 11
+  n_layers: 8
+  d_hidden: 160
+  dropout: 0.1
+  lr: 6.174369216960628e-05
+  pos_weight: 1.0
+
+final_budget:
+  epochs: 60
+  steps_per_epoch: 8000
+  train_pos: 512
+  train_neg: 512
+  batch_train: 256
+
+  val_max_tiles: 64
+  val_batch_patches: 8192
+  val_every: 1
+
+  es_patience: 8
+  rlrop_patience: 3
+
+thr_prob_default: 0.7

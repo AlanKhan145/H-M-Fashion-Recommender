@@ -1,0 +1,216 @@
+# Bài học: Kiến thức cơ bản về HTML
+
+## Phần 1: Cấu trúc file HTML
+
+### 1) Tạo nhanh cấu trúc HTML cơ bản (VS Code)
+
+* Trong VS Code (có Emmet), gõ: `!` rồi nhấn **Tab** hoặc **Enter**
+* Lưu ý: `!` thường là phím **Shift + 1** trên bàn phím, nên nhiều bạn hay nói “Shift + !”.
+
+### 2) Cấu trúc chuẩn của một file HTML
+
+HTML thường có khung như sau:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tiêu đề trang</title>
+</head>
+<body>
+  Nội dung hiển thị của trang nằm ở đây
+</body>
+</html>
+```
+
+### 3) Ý nghĩa các phần quan trọng
+
+* `<!DOCTYPE html>`: báo cho trình duyệt đây là tài liệu HTML5.
+* `<html lang="en"> ... </html>`
+
+  * `lang="en"`: ngôn ngữ là **English** (tiếng Anh).
+  * Nếu trang tiếng Việt thường dùng `lang="vi"`.
+* `<head>...</head>`: chứa **thông tin chung** (meta), không phải phần nội dung hiển thị chính.
+
+  * Thường có: `meta charset`, `meta viewport`, `title`, link CSS, script…
+* `<body>...</body>`: chứa **toàn bộ nội dung hiển thị** trên trang.
+
+---
+
+## Phần 2: Các thẻ HTML cơ bản
+
+### 1) Thẻ chia khối và văn bản
+
+* `<div></div>`: bọc một khối lớn (division), hay dùng để chia layout.
+* `<p></p>`: đoạn văn bản dài (paragraph).
+
+### 2) Thẻ tiêu đề
+
+* `<h1></h1> ... <h6></h6>`: tiêu đề từ lớn đến nhỏ
+
+  * Thực tế nên dùng **1 thẻ `<h1>`** cho tiêu đề chính của trang.
+
+### 3) Thẻ liên kết
+
+* Cơ bản:
+
+```html
+<a href="https://example.com">Bấm vào đây</a>
+```
+
+* Mở sang tab/trang mới:
+
+```html
+<a href="https://example.com" target="_blank" rel="noopener noreferrer">
+  Mở trang mới
+</a>
+```
+
+Giải thích nhanh:
+
+* `target="_blank"`: mở tab mới
+* `rel="noopener noreferrer"`: tăng bảo mật/hiệu năng khi mở tab mới (tránh trang mới can thiệp trang hiện tại)
+
+### 4) Thẻ hình ảnh
+
+```html
+<img src="duong-dan-anh.jpg" alt="Mô tả ảnh" />
+```
+
+* `src`: đường dẫn ảnh
+* `alt`: mô tả khi ảnh lỗi + hỗ trợ SEO + hỗ trợ đọc màn hình
+
+### 5) Thẻ danh sách
+
+* Danh sách có thứ tự (Order List):
+
+```html
+<ol>
+  <li>Mục 1</li>
+  <li>Mục 2</li>
+</ol>
+```
+
+* Danh sách không thứ tự (Unorder List):
+
+```html
+<ul>
+  <li>Mục A</li>
+  <li>Mục B</li>
+</ul>
+```
+
+### 6) Các thẻ semantic (rõ nghĩa, dễ đọc cấu trúc)
+
+* `<header></header>`: phần phía trên (đầu trang)
+* `<footer></footer>`: phần phía dưới (chân trang)
+* `<aside></aside>`: nội dung phụ, nằm bên (sidebar)
+* `<nav></nav>`: menu điều hướng (lưu ý: **nav**, không phải “nap”)
+* `<main></main>`: nội dung chính của trang
+* `<section></section>`: một khu vực nội dung (thường có chủ đề)
+* `<article></article>`: một bài viết/khối nội dung độc lập
+
+👉 Dùng semantic giúp code **mạch lạc**, dễ bảo trì, tốt cho SEO.
+
+### 7) Nhúng nội dung trang khác
+
+* `<iframe></iframe>` (lưu ý: **iframe**, không phải “inframe”)
+
+```html
+<iframe src="https://example.com" width="600" height="400"></iframe>
+```
+
+### 8) Thẻ inline hay dùng trong text
+
+* `<span>...</span>`: bọc đoạn ngắn trong dòng chữ
+* `<strong>...</strong>`: nhấn mạnh (thường hiển thị **đậm**) – tương tự `<b>` nhưng **strong có ý nghĩa nhấn mạnh**
+* `<em>...</em>`: nhấn mạnh (thường hiển thị *nghiêng*) – tương tự `<i>` nhưng **em có ý nghĩa nhấn mạnh**
+
+---
+
+## Phần 3: Khác biệt giữa thẻ inline và thẻ block
+
+### 1) Thẻ block (khối)
+
+* Chiếm **toàn bộ chiều ngang** của vùng chứa (thường là body/container)
+* Nhiều thẻ block đứng cạnh nhau sẽ **tự xuống dòng**
+* Ví dụ: `div`, `p`, `h1-h6`, `section`, `article`, `header`, `footer`, `main`, `nav`, `ul`, `ol`
+
+### 2) Thẻ inline (trong dòng)
+
+* Chiều rộng **vừa đúng bằng nội dung**
+* Nằm cùng hàng với text (không tự xuống dòng)
+* Ví dụ: `span`, `a`, `strong`, `em`, `img` (thường được xem là inline/inline-block)
+
+### Khi nào dùng?
+
+* Inline: khi bạn cần bọc **đoạn ngắn** trong dòng chữ (tô đậm, đổi màu một cụm từ…)
+* Block: khi bạn cần bọc **một khối nội dung** (đoạn dài, layout, chia cột…)
+
+> Ghi chú: CSS có thể đổi hành vi hiển thị bằng `display: block/inline/inline-block/flex...`
+
+---
+
+## Phần 4: Phân biệt `class` và `id` (dùng đúng và hiệu quả)
+
+### 1) `class`
+
+* Có thể **trùng nhau** (nhiều phần tử dùng chung 1 class)
+* Tên class **được phép có dấu gạch nối**, thường viết kiểu: `product-card`, `main-title`
+* Dùng khi bạn muốn style/nhắm tới **nhiều phần tử**
+
+```html
+<div class="card"></div>
+<div class="card"></div>
+```
+
+### 2) `id`
+
+* **Duy nhất** trong 1 trang (không được trùng)
+* Tên id **không có dấu cách**
+* Dùng khi cần định danh **một phần tử duy nhất** (đặc biệt hay dùng cho JS, anchor link)
+
+```html
+<div id="header"></div>
+```
+
+### 3) Quy tắc đặt tên class/id
+
+* Đặt tên thể hiện “mình đang làm gì”
+* Ưu tiên tiếng Anh, rõ ràng, nhất quán
+  Ví dụ tốt: `product-list`, `sidebar`, `login-form`, `btn-primary`
+
+---
+
+## Phần 5: Quy tắc đặt tên BEM (Block – Element – Modifier)
+
+### 1) BEM là gì?
+
+* **Block**: một khối độc lập (component)
+* **Element**: thành phần nằm bên trong block
+* **Modifier**: biến thể/trạng thái của block hoặc element
+
+### 2) Cú pháp BEM phổ biến
+
+* `block`
+* `block__element`
+* `block--modifier`
+* `block__element--modifier`
+
+Ví dụ:
+
+```html
+<div class="laptop laptop--small">
+  <h2 class="laptop__title">Laptop Gaming</h2>
+  <p class="laptop__desc laptop__desc--muted">Mô tả ngắn...</p>
+</div>
+```
+
+### 3) Quy tắc “phân tích giao diện” theo BEM (cách làm cơ bản)
+
+1. Nhìn giao diện và tách thành các **khối độc lập** → đặt **Block**
+2. Mỗi khối có các phần con quan trọng → đặt **Element**
+3. Những biến thể (nhỏ/lớn, active/disabled, primary/secondary) → đặt **Modifier**
+

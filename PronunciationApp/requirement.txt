@@ -1,0 +1,10 @@
+gTTS
+pyaudio
+librosa
+dtw
+numpy
+pygame
+matplotlib
+googletrans==4.0.0rc1
+whisper
+accelerate

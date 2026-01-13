@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Create Lesson</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50">
+  <main class="max-w-3xl mx-auto p-6">
+    <h1 class="text-3xl font-extrabold">Tạo bộ bài học mới</h1>
+    <p class="text-slate-500 mt-2">Tạo lesson pack (ngôn ngữ + tiêu đề). Sau đó thêm flashcards hàng loạt.</p>
+
+    <div class="bg-white p-6 rounded-2xl shadow mt-6 border border-slate-100">
+      <label class="block text-sm font-bold text-slate-600">Language code</label>
+      <input id="lang" class="mt-2 w-full p-3 rounded-xl border bg-slate-50" placeholder="ja / en / vi" value="ja"/>
+
+      <label class="block text-sm font-bold text-slate-600 mt-4">Title</label>
+      <input id="title" class="mt-2 w-full p-3 rounded-xl border bg-slate-50" placeholder="Bài 1: Lời chào & Định danh"/>
+
+      <label class="block text-sm font-bold text-slate-600 mt-4">Description</label>
+      <textarea id="desc" class="mt-2 w-full p-3 rounded-xl border bg-slate-50" rows="3"
+        placeholder="Mục tiêu bài học, ghi chú, cách học..."></textarea>
+
+      <div class="mt-5 flex gap-2">
+        <button id="btnCreate" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">Tạo Lesson</button>
+        <a href="admin_add_items.html" class="px-5 py-3 rounded-xl border font-bold bg-white">Thêm từ</a>
+      </div>
+
+      <div id="result" class="mt-5 text-sm text-slate-600"></div>
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow transition-all transform translate-y-20 opacity-0 pointer-events-none">
+    <span id="toastMsg"></span>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+    document.getElementById("btnCreate").onclick = async ()=>{
+      try{
+        const body = {
+          lang: document.getElementById("lang").value.trim(),
+          title: document.getElementById("title").value.trim(),
+          description: document.getElementById("desc").value.trim()
+        };
+        const lesson = await apiPost("/admin/lessons", body);
+        toast("Tạo thành công ✅");
+        document.getElementById("result").innerHTML =
+          `Lesson ID: <b>${lesson.id}</b> — slug: <b>${lesson.slug}</b><br/>
+           Mở trang thêm từ và dán ID này để add nhanh.`;
+        localStorage.setItem("lastLessonId", String(lesson.id));
+      }catch(e){ toast("Lỗi: " + e.message); }
+    };
+  </script>
+</body>
+</html>

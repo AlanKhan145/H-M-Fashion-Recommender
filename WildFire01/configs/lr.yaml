@@ -1,0 +1,8 @@
+k_patch: 11
+max_train_batches: 800      
+batch_train: 256
+train_pos: 512
+train_neg: 512
+
+C: 1.0
+max_iter: 200

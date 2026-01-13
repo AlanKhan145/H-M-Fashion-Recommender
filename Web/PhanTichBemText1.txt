@@ -1,0 +1,58 @@
+1) Block 1: screen (toàn bộ màn hình + bố cục)
+
+Ý nghĩa: Component cha quản lý background, căn giữa, và cách sắp xếp các card.
+
+Block
+
+.screen — nền + chiều cao full màn + căn giữa tổng thể
+
+Elements (thuộc về screen)
+
+.screen__wrap
+Khung giới hạn chiều rộng (max-width), canh giữa nội dung.
+
+.screen__grid
+Lưới chứa các card (2 cột desktop, 1 cột mobile).
+
+ Chuẩn BEM: screen là block, các phần con thuộc block dùng screen__....
+
+2) Block 2: card (thẻ trạng thái Error/Success)
+
+Ý nghĩa: Component độc lập hiển thị trạng thái. Đây là block tách riêng để tái sử dụng ở chỗ khác.
+
+Block
+
+.card
+
+Elements (thuộc về card)
+
+.card__icon
+Khu vực hiển thị icon (canh giữa theo chiều ngang/đứng).
+
+.card__ring
+Vòng tròn bao icon (đổi màu theo trạng thái).
+
+.card__mark
+Ký hiệu trạng thái (✕ hoặc ✓).
+
+.card__label
+Chữ “ERROR / SUCCESS”.
+
+.card__action
+Vùng nút ở đáy (full width, nền màu theo trạng thái).
+
+.card__action-text 
+Text bên trong nút.
+
+Sửa chuẩn BEM: bạn đang ghi .status-card__action-text là sai block.
+Vì block của bạn là card, nên element phải là .card__action-text.
+
+3) Modifiers (biến thể trạng thái của card)
+
+Ý nghĩa: thay đổi “state” (màu sắc, icon style…) nhưng giữ nguyên cấu trúc.
+
+.card--error
+
+.card--success
+
+ Chuẩn BEM: modifier gắn trực tiếp vào block card để thay đổi skin/theme.

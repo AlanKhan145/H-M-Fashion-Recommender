@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Status Screen (BEM)</title>
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    /* =========================
+       Block: screen
+       ========================= */
+    .screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 40px 24px;
+
+      /* nền kiểu ảnh: tím -> cam, có chiều sâu */
+      background:
+        radial-gradient(900px 520px at 55% 55%, rgba(255,255,255,0.12), transparent 60%),
+        radial-gradient(800px 600px at 25% 80%, rgba(255, 170, 70, 0.55), transparent 65%),
+        radial-gradient(900px 600px at 70% 25%, rgba(145, 110, 255, 0.55), transparent 65%),
+        linear-gradient(140deg, #5b3c93 0%, #7b4fb3 25%, #e2a15a 70%, #b94b3f 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* vignette tối nhẹ giống ảnh */
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,0.35) 100%);
+      pointer-events: none;
+    }
+
+    /* “mảng” góc phải trên giống ảnh (xấp xỉ) */
+    .screen::after {
+      content: "";
+      position: absolute;
+      right: -140px;
+      top: -140px;
+      width: 360px;
+      height: 360px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02));
+      transform: rotate(0deg);
+      clip-path: polygon(40% 0%, 100% 0%, 100% 60%);
+      pointer-events: none;
+    }
+
+    .screen__wrap {
+      width: min(920px, 100%);
+      position: relative; /* để nổi trên overlay */
+      z-index: 1;
+    }
+
+    .screen__grid {
+      display: flex;
+      gap: 64px;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    /* =========================
+       Block: card
+       ========================= */
+    .card {
+      --accent: #111;
+
+      width: 320px;
+      height: 520px;
+      background: #fff;
+      border-radius: 2px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      overflow: hidden;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .card__icon {
+      margin-top: 95px;
+      display: grid;
+      place-items: center;
+    }
+
+    .card__ring {
+      width: 140px;
+      height: 140px;
+      border: 6px solid var(--accent);
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+    }
+
+    .card__mark {
+      width: 70px;
+      height: 70px;
+      display: block;
+    }
+
+    .card__mark path,
+    .card__mark polyline,
+    .card__mark line {
+      stroke: var(--accent);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .card__label {
+      margin-top: 22px;
+      font-size: 16px;
+      letter-spacing: 2px;
+      color: #111;
+    }
+
+    .card__action {
+      margin-top: auto;
+      width: 100%;
+      border: 0;
+      background: var(--accent);
+      padding: 20px 16px;
+      cursor: pointer;
+    }
+
+    .card__action-text {
+      display: block;
+      text-align: center;
+      color: #fff;
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+
+    /* =========================
+       Modifiers: trạng thái
+       ========================= */
+    .card--error   { --accent: #ff3b3b; }
+    .card--success { --accent: #22d66a; }
+
+    /* responsive */
+    @media (max-width: 760px) {
+      .screen__grid {
+        flex-direction: column;
+        gap: 24px;
+        align-items: center;
+      }
+      .card { width: min(360px, 92vw); }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Block: screen -->
+  <div class="screen">
+    <div class="screen__wrap">
+      <div class="screen__grid">
+
+        <!-- Block: card | Modifier: error -->
+        <section class="card card--error" aria-label="Error state">
+          <div class="card__icon">
+            <div class="card__ring">
+              <!-- X icon (SVG) -->
+              <svg class="card__mark" viewBox="0 0 100 100" aria-hidden="true">
+                <line x1="28" y1="28" x2="72" y2="72"></line>
+                <line x1="72" y1="28" x2="28" y2="72"></line>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card__label">ERROR</div>
+
+          <button class="card__action" type="button">
+            <span class="card__action-text">TRY AGAIN</span>
+          </button>
+        </section>
+
+        <!-- Block: card | Modifier: success -->
+        <section class="card card--success" aria-label="Success state">
+          <div class="card__icon">
+            <div class="card__ring">
+              <!-- Check icon (SVG) -->
+              <svg class="card__mark" viewBox="0 0 100 100" aria-hidden="true">
+                <polyline points="22,54 42,72 78,32"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card__label">SUCCESS</div>
+
+          <button class="card__action" type="button">
+            <span class="card__action-text">CONTINUE</span>
+          </button>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

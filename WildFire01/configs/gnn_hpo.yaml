@@ -1,0 +1,17 @@
+n_initial: 64
+eta: 4
+seed: 42
+max_retries_oom: 2
+verbose_fit: 0
+rung0_repeats: 1
+
+budgets:
+  - {epochs: 4,  steps_per_epoch: 450,  train_pos: 128, train_neg: 128, batch_train: 96}
+  - {epochs: 6,  steps_per_epoch: 650,  train_pos: 256, train_neg: 256, batch_train: 128}
+  - {epochs: 8,  steps_per_epoch: 850,  train_pos: 384, train_neg: 384, batch_train: 160}
+  - {epochs: 10, steps_per_epoch: 1000, train_pos: 512, train_neg: 512, batch_train: 192}
+
+val_schedule:
+  rung0: {val_max_tiles: 32, val_batch_patches: 4096}
+  rung1: {val_max_tiles: 48, val_batch_patches: 6144}
+  rung2plus: {val_max_tiles: 64, val_batch_patches: 8192}

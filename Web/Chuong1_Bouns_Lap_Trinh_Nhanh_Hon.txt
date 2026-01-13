@@ -1,0 +1,259 @@
+# **Chương 1 – Bonus
+
+Lập trình HTML nhanh hơn với Emmet**
+
+---
+
+## 1. Giới thiệu về Emmet
+
+**Emmet** là công cụ hỗ trợ viết HTML và CSS bằng cú pháp rút gọn.
+Thay vì phải gõ đầy đủ thẻ HTML, lập trình viên chỉ cần nhập một biểu thức ngắn và nhấn `Tab` để sinh ra cấu trúc code hoàn chỉnh.
+
+Emmet được tích hợp sẵn trong **Visual Studio Code** và nhiều trình soạn thảo khác.
+
+---
+
+## 2. Cú pháp cơ bản của Emmet
+
+### 2.1. Tạo phần tử với class
+
+Cú pháp:
+
+```html
+.ten_class
+```
+
+Kết quả sinh ra:
+
+```html
+<div class="ten_class"></div>
+```
+
+---
+
+### 2.2. Tạo phần tử với id
+
+Cú pháp:
+
+```html
+#ma_id
+```
+
+Kết quả:
+
+```html
+<div id="ma_id"></div>
+```
+
+---
+
+### 2.3. Tạo phần tử có nhiều class
+
+Cú pháp:
+
+```html
+.demo.demo1.demo2
+```
+
+Kết quả:
+
+```html
+<div class="demo demo1 demo2"></div>
+```
+
+---
+
+## 3. Phím tắt hỗ trợ viết code nhanh trong VS Code
+
+### 3.1. Di chuyển dòng code
+
+| Thao tác             | Phím tắt |
+| -------------------- | -------- |
+| Di chuyển dòng lên   | Alt + ↑  |
+| Di chuyển dòng xuống | Alt + ↓  |
+
+---
+
+### 3.2. Sao chép nhanh dòng code
+
+| Chức năng              | Phím tắt        |
+| ---------------------- | --------------- |
+| Nhân bản dòng hiện tại | Shift + Alt + ↓ |
+
+---
+
+### 3.3. Chỉnh sửa nhiều vị trí cùng lúc
+
+* Đặt nhiều con trỏ:
+
+  ```
+  Alt + Click chuột
+  ```
+
+* Chọn lần lượt các từ giống nhau:
+
+  ```
+  Ctrl + D
+  ```
+
+* Chọn tất cả các từ giống nhau trong file:
+
+  ```
+  Ctrl + Shift + L
+  ```
+
+Các thao tác này thường được dùng để sửa hàng loạt class, id hoặc tên biến.
+
+---
+
+## 4. Tạo danh sách nhanh với Emmet
+
+### 4.1. Tạo danh sách cơ bản
+
+Cú pháp:
+
+```html
+ul>li*5
+```
+
+Kết quả:
+
+```html
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
+```
+
+---
+
+### 4.2. Danh sách có nội dung
+
+Cú pháp:
+
+```html
+ul>li*5{Nội dung}
+```
+
+---
+
+### 4.3. Danh sách đánh số tự động
+
+Cú pháp:
+
+```html
+ul>li*10{item$}
+```
+
+Kết quả:
+
+```html
+<li>item1</li>
+<li>item2</li>
+...
+<li>item10</li>
+```
+
+---
+
+### 4.4. Danh sách có class
+
+Cú pháp:
+
+```html
+ul>li.item*10
+```
+
+Mỗi thẻ `li` được tạo ra đều có class `item`.
+
+---
+
+## 5. Tạo nhiều phần tử cùng cấp
+
+### 5.1. Cú pháp tạo các thẻ ngang hàng
+
+```html
+h1+div+p
+```
+
+---
+
+### 5.2. Ví dụ thực tế
+
+```html
+h1.title+p.desc+div.demo
+```
+
+Kết quả:
+
+```html
+<h1 class="title"></h1>
+<p class="desc"></p>
+<div class="demo"></div>
+```
+
+---
+
+## 6. Tài liệu cú pháp Emmet
+
+Emmet cung cấp bảng cú pháp đầy đủ cho các phần tử HTML.
+
+Trong VS Code có thể tham khảo:
+
+```
+docs.element_cheatsheet
+```
+
+---
+
+## 7. Bài tập luyện tập
+
+### Bài 1
+
+Sử dụng Emmet để tạo cấu trúc:
+
+* Một `div.container`
+* Bên trong gồm:
+
+  * `h1.title`
+  * `ul` chứa 5 `li` với nội dung `Item 1` đến `Item 5`
+
+---
+
+### Bài 2
+
+Tạo cấu trúc:
+
+* Một thẻ `section`
+* Bên trong có 3 `div.card`
+* Mỗi `div.card` gồm:
+
+  * Một `h2`
+  * Một `p`
+
+---
+
+### Bài 3 (nâng cao)
+
+Sử dụng Emmet để tạo layout trang web cơ bản:
+
+```html
+header+main+footer
+```
+
+---
+
+## 8. Kết luận
+
+Việc sử dụng Emmet giúp:
+
+* Giảm thời gian viết HTML
+* Hạn chế lỗi cú pháp
+* Tăng tốc độ xây dựng giao diện
+* Tạo cấu trúc HTML nhất quán và chuyên nghiệp
+
+Emmet là kỹ năng bắt buộc đối với lập trình viên Frontend ở giai đoạn học và làm việc thực tế.
+

@@ -1,0 +1,3155 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Axis of Cosmos — Greek Myth Card Roguelike (Single-File)</title>
+  <style>
+    :root{
+      --bg:#0b0f1a;
+      --panel:#121a2a;
+      --panel2:#0f1524;
+      --text:#e8eefc;
+      --muted:#9db0d6;
+      --accent:#7aa2ff;
+      --danger:#ff6b6b;
+      --good:#5ce0a6;
+      --gold:#ffd36e;
+
+      --E:#a46bff; /* Entropy */
+      --G:#5ce0a6; /* Gaia */
+      --T:#4aa3ff; /* Tartarus */
+
+      --cardW: 170px;
+      --cardH: 240px;
+      --radius: 16px;
+      --shadow: 0 14px 35px rgba(0,0,0,.45);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(122,162,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(255,211,110,.12), transparent 55%),
+        radial-gradient(900px 900px at 50% 90%, rgba(92,224,166,.10), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    .app{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px 16px 40px;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 14px;
+    }
+
+    .title{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing:.4px;
+      font-weight: 800;
+    }
+    .title .sub{
+      color:var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .topBtns{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+
+    button{
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.14);
+      color:var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,.25);
+      transition: transform .08s ease, border-color .2s ease, background .2s ease, opacity .2s ease;
+      font-weight: 700;
+      font-size: 13px;
+      user-select:none;
+    }
+    button:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.25); }
+    button:active{ transform: translateY(0px) scale(.99); opacity:.95; }
+    button:disabled{
+      opacity:.45; cursor:not-allowed; transform:none;
+    }
+
+    .ghost{
+      background: transparent;
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:none;
+    }
+    .primary{
+      border-color: rgba(122,162,255,.45);
+      background: linear-gradient(180deg, rgba(122,162,255,.18), rgba(255,255,255,.04));
+    }
+    .danger{
+      border-color: rgba(255,107,107,.5);
+      background: linear-gradient(180deg, rgba(255,107,107,.18), rgba(255,255,255,.04));
+    }
+
+    .screen{ display:none; }
+    .screen.active{ display:block; }
+
+    /* Panels */
+    .grid{
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap:14px;
+    }
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+    .panel h2{
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing:.3px;
+    }
+    .muted{ color: var(--muted); }
+
+    .row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .spacer{ height:10px; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.10);
+      font-size: 12px;
+      color: var(--text);
+      user-select:none;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: rgba(255,255,255,.4);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+    }
+
+    /* Axis bars */
+    .axisWrap{ display:flex; flex-direction:column; gap:10px; }
+    .axisBar{
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      padding: 10px 10px;
+    }
+    .axisHead{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:10px;
+      margin-bottom: 7px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .axisHead b{ color: var(--text); }
+    .bar{
+      height: 10px;
+      background: rgba(255,255,255,.08);
+      border-radius: 999px;
+      overflow:hidden;
+      position:relative;
+    }
+    .bar>i{
+      display:block;
+      height:100%;
+      width: 10%;
+      border-radius: 999px;
+      transition: width .25s ease;
+      box-shadow: 0 0 16px rgba(255,255,255,.12) inset;
+    }
+    .thresh{
+      position:absolute; top:-2px; bottom:-2px;
+      width:2px;
+      left:70%;
+      background: rgba(255,255,255,.35);
+      filter: blur(.2px);
+      pointer-events:none;
+    }
+
+    /* Battle layout */
+    .battleLayout{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .big{
+      display:grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap:12px;
+      min-height: 540px;
+    }
+
+    .hudRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    .hpBox{
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-height: 82px;
+    }
+    .hpTop{
+      display:flex; justify-content:space-between; align-items:baseline;
+      gap:10px;
+    }
+    .hpTop b{ font-size: 13px; }
+    .hpTop span{ font-size: 12px; color: var(--muted); }
+
+    .hpBar{
+      height: 10px;
+      background: rgba(255,255,255,.08);
+      border-radius: 999px;
+      overflow:hidden;
+      position:relative;
+    }
+    .hpBar > i{
+      display:block;
+      height:100%;
+      width: 60%;
+      border-radius: 999px;
+      transition: width .25s ease;
+    }
+
+    .statusLine{
+      display:flex; gap:8px; flex-wrap:wrap; margin-top: 4px;
+    }
+    .badge{
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .badge i{
+      width:8px; height:8px; border-radius:50%;
+      background: rgba(255,255,255,.4);
+    }
+    .bBurn i{ background: rgba(255,107,107,.85); }
+    .bFreeze i{ background: rgba(74,163,255,.9); }
+    .bStun i{ background: rgba(255,211,110,.95); }
+    .bShield i{ background: rgba(92,224,166,.95); }
+    .bCurse i{ background: rgba(164,107,255,.9); }
+
+    .log{
+      background: rgba(0,0,0,.24);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 10px;
+      height: 220px;
+      overflow:auto;
+      font-size: 12px;
+      line-height: 1.4;
+      color: rgba(232,238,252,.92);
+    }
+    .log .t{ color: var(--muted); }
+    .log .good{ color: var(--good); }
+    .log .bad{ color: var(--danger); }
+    .log .sys{ color: var(--gold); }
+
+    /* Hand */
+    .hand{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-start;
+      align-items:flex-start;
+      padding: 6px 2px 0;
+      min-height: 260px;
+    }
+
+    /* Card */
+    .card{
+      width: var(--cardW);
+      height: var(--cardH);
+      border-radius: var(--radius);
+      position:relative;
+      overflow:hidden;
+      box-shadow: 0 12px 24px rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(18,26,42,.65);
+      transform-origin: center;
+      transition: transform .12s ease, filter .2s ease, opacity .2s ease;
+      cursor:pointer;
+      user-select:none;
+    }
+    .card:hover{ transform: translateY(-3px) scale(1.01); }
+    .card:active{ transform: translateY(-1px) scale(.995); }
+    .card.disabled{
+      opacity: .55;
+      filter: grayscale(.2);
+      cursor:not-allowed;
+    }
+    .card.disabled:hover{ transform:none; }
+
+    /* Frames by group */
+    .frame-PRIMORDIAL{
+      border-color: rgba(164,107,255,.55);
+      background:
+        radial-gradient(140px 100px at 30% 15%, rgba(164,107,255,.25), transparent 60%),
+        repeating-linear-gradient(135deg, rgba(164,107,255,.12) 0 6px, rgba(0,0,0,0) 6px 12px),
+        rgba(18,26,42,.65);
+    }
+    .frame-TITAN{
+      border-color: rgba(170,170,170,.40);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.0)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 2px, rgba(0,0,0,0) 2px 7px),
+        rgba(18,26,42,.65);
+    }
+    .frame-OLYMPIAN{
+      border-color: rgba(255,211,110,.55);
+      background:
+        radial-gradient(160px 110px at 70% 20%, rgba(255,211,110,.18), transparent 60%),
+        linear-gradient(180deg, rgba(255,211,110,.09), rgba(0,0,0,0)),
+        rgba(18,26,42,.65);
+    }
+    .frame-NEUTRAL{
+      border-color: rgba(255,255,255,.16);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0)),
+        rgba(18,26,42,.65);
+    }
+
+    /* Card header */
+    .cTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding: 10px 10px 0 10px;
+    }
+    .cName{
+      font-weight: 900;
+      font-size: 12px;
+      line-height: 1.15;
+      letter-spacing:.2px;
+      text-shadow: 0 2px 12px rgba(0,0,0,.35);
+    }
+    .cGroup{
+      font-size: 10px;
+      color: rgba(232,238,252,.8);
+      opacity:.9;
+      margin-top: 3px;
+    }
+    .cCost{
+      width: 30px; height: 30px;
+      border-radius: 999px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight: 900;
+      font-size: 13px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 0 0 4px rgba(255,255,255,.05);
+      flex:0 0 auto;
+    }
+    .cBody{
+      padding: 6px 10px 10px;
+      display:flex;
+      flex-direction:column;
+      height: calc(var(--cardH) - 50px);
+      gap: 8px;
+    }
+
+    /* Art */
+    .art{
+      height: 92px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .art::after{
+      content:"";
+      position:absolute; inset:-30px;
+      background:
+        radial-gradient(120px 80px at 20% 20%, rgba(255,255,255,.10), transparent 60%),
+        radial-gradient(120px 80px at 80% 70%, rgba(255,255,255,.06), transparent 60%);
+      pointer-events:none;
+      opacity:.7;
+    }
+
+    /* Lightning (Zeus) */
+    .art.lightning{
+      background:
+        radial-gradient(120px 80px at 60% 30%, rgba(255,211,110,.25), transparent 55%),
+        linear-gradient(180deg, rgba(255,211,110,.10), rgba(0,0,0,0)),
+        rgba(0,0,0,.22);
+    }
+    .art.lightning::before{
+      content:"";
+      position:absolute;
+      left: 50%; top: 10px;
+      width: 28px; height: 78px;
+      transform: translateX(-50%) skewX(-14deg);
+      background:
+        linear-gradient(90deg, rgba(255,211,110,0) 0 15%, rgba(255,211,110,.95) 15% 55%, rgba(255,211,110,0) 55% 100%);
+      clip-path: polygon(50% 0, 70% 18%, 46% 18%, 63% 46%, 40% 46%, 56% 74%, 34% 74%, 50% 100%, 22% 66%, 44% 66%, 27% 38%, 52% 38%, 34% 12%);
+      filter: drop-shadow(0 0 12px rgba(255,211,110,.55));
+      opacity:.95;
+    }
+
+    /* Waves (Poseidon) */
+    .art.waves{
+      background:
+        radial-gradient(120px 90px at 35% 30%, rgba(74,163,255,.22), transparent 60%),
+        linear-gradient(180deg, rgba(74,163,255,.14), rgba(0,0,0,0)),
+        rgba(0,0,0,.22);
+    }
+    .art.waves::before{
+      content:"";
+      position:absolute; inset:-20px;
+      background:
+        repeating-linear-gradient(
+          -20deg,
+          rgba(74,163,255,.0) 0 8px,
+          rgba(74,163,255,.18) 8px 16px
+        );
+      mask-image:
+        radial-gradient(closest-side at 25% 60%, rgba(0,0,0,1), transparent 60%),
+        radial-gradient(closest-side at 55% 65%, rgba(0,0,0,1), transparent 60%),
+        radial-gradient(closest-side at 80% 60%, rgba(0,0,0,1), transparent 60%);
+      opacity:.95;
+    }
+
+    /* Abyss (Tartarus) */
+    .art.abyss{
+      background:
+        radial-gradient(110px 70px at 50% 40%, rgba(164,107,255,.18), rgba(0,0,0,0) 60%),
+        radial-gradient(160px 120px at 50% 70%, rgba(0,0,0,.8), rgba(0,0,0,.0) 65%),
+        rgba(0,0,0,.35);
+    }
+    .art.abyss::before{
+      content:"";
+      position:absolute;
+      left: 50%; top: 18px;
+      width: 120px; height: 120px;
+      transform: translateX(-50%);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,.0) 0 44%, rgba(0,0,0,.9) 44% 52%, rgba(0,0,0,0) 52% 70%),
+        radial-gradient(circle at 50% 50%, rgba(164,107,255,.0) 0 40%, rgba(164,107,255,.25) 40% 46%, rgba(164,107,255,0) 46% 70%);
+      filter: blur(.2px);
+      opacity:.95;
+    }
+
+    /* Leaf (Gaia) */
+    .art.leaf{
+      background:
+        radial-gradient(120px 80px at 40% 30%, rgba(92,224,166,.24), transparent 60%),
+        linear-gradient(180deg, rgba(92,224,166,.10), rgba(0,0,0,0)),
+        rgba(0,0,0,.22);
+    }
+    .art.leaf::before{
+      content:"";
+      position:absolute;
+      left: 50%; top: 10px;
+      width: 80px; height: 80px;
+      transform: translateX(-50%) rotate(-15deg);
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,255,255,.14), transparent 55%),
+        linear-gradient(135deg, rgba(92,224,166,.95), rgba(92,224,166,.20));
+      clip-path: polygon(50% 0, 68% 12%, 84% 32%, 92% 52%, 86% 72%, 70% 88%, 50% 100%, 30% 88%, 14% 72%, 8% 52%, 16% 32%, 32% 12%);
+      filter: drop-shadow(0 0 10px rgba(92,224,166,.35));
+      opacity:.95;
+    }
+    .art.leaf::after{
+      content:"";
+      position:absolute;
+      left: 50%; top: 18px;
+      width: 2px; height: 70px;
+      transform: translateX(-50%) rotate(-15deg);
+      background: rgba(0,0,0,.35);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.08);
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    /* Noise (Chaos) */
+    .art.noise{
+      background:
+        repeating-radial-gradient(circle at 20% 20%, rgba(164,107,255,.14) 0 3px, rgba(0,0,0,0) 3px 6px),
+        repeating-linear-gradient(135deg, rgba(255,211,110,.08) 0 2px, rgba(0,0,0,0) 2px 6px),
+        radial-gradient(120px 80px at 70% 30%, rgba(74,163,255,.12), transparent 60%),
+        rgba(0,0,0,.26);
+      animation: shimmer 2.8s linear infinite;
+    }
+    @keyframes shimmer{
+      0%{ filter:hue-rotate(0deg) brightness(1); }
+      50%{ filter:hue-rotate(18deg) brightness(1.05); }
+      100%{ filter:hue-rotate(0deg) brightness(1); }
+    }
+
+    /* Sickle / hourglass (Cronus) */
+    .art.sickle{
+      background:
+        radial-gradient(120px 80px at 30% 30%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(180deg, rgba(170,170,170,.10), rgba(0,0,0,0)),
+        rgba(0,0,0,.22);
+    }
+    .art.sickle::before{
+      content:"";
+      position:absolute; left: 50%; top: 16px;
+      width: 92px; height: 92px;
+      transform: translateX(-50%);
+      background:
+        radial-gradient(circle at 50% 55%, rgba(255,255,255,.0) 0 38%, rgba(230,230,230,.85) 38% 48%, rgba(255,255,255,0) 48% 100%);
+      filter: drop-shadow(0 0 10px rgba(255,255,255,.22));
+      opacity:.9;
+    }
+    .art.sickle::after{
+      content:"";
+      position:absolute;
+      left: 52%; top: 40px;
+      width: 10px; height: 55px;
+      transform: rotate(18deg);
+      background: linear-gradient(180deg, rgba(230,230,230,.85), rgba(230,230,230,.25));
+      border-radius: 10px;
+      opacity:.9;
+    }
+
+    /* Forge / hammer (Hephaestus) */
+    .art.forge{
+      background:
+        radial-gradient(120px 90px at 50% 35%, rgba(255,107,107,.16), transparent 60%),
+        linear-gradient(180deg, rgba(255,107,107,.10), rgba(0,0,0,0)),
+        rgba(0,0,0,.22);
+    }
+    .art.forge::before{
+      content:"";
+      position:absolute; left: 50%; top: 18px;
+      width: 100px; height: 75px;
+      transform: translateX(-50%) rotate(-10deg);
+      background:
+        linear-gradient(90deg, rgba(255,211,110,.85), rgba(255,211,110,.25));
+      clip-path: polygon(18% 40%, 62% 40%, 62% 18%, 90% 18%, 90% 62%, 62% 62%, 62% 50%, 18% 50%);
+      filter: drop-shadow(0 0 10px rgba(255,211,110,.22));
+      opacity:.95;
+    }
+    .art.forge::after{
+      content:"";
+      position:absolute;
+      left: 54%; top: 55px;
+      width: 10px; height: 45px;
+      transform: rotate(18deg);
+      border-radius: 10px;
+      background: rgba(230,230,230,.55);
+      opacity:.75;
+    }
+
+    /* Scroll / decree (Olympian law) */
+    .art.scroll{
+      background:
+        radial-gradient(120px 80px at 45% 30%, rgba(255,211,110,.18), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0)),
+        rgba(0,0,0,.22);
+    }
+    .art.scroll::before{
+      content:"";
+      position:absolute; left: 50%; top: 18px;
+      width: 108px; height: 66px;
+      transform: translateX(-50%);
+      background:
+        linear-gradient(180deg, rgba(255,211,110,.35), rgba(255,255,255,.06));
+      border-radius: 12px;
+      clip-path: polygon(8% 10%, 92% 10%, 92% 90%, 8% 90%, 8% 70%, 2% 62%, 8% 54%, 8% 46%, 2% 38%, 8% 30%);
+      opacity:.95;
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.22);
+    }
+    .art.scroll::after{
+      content:"";
+      position:absolute; left: 50%; top: 30px;
+      width: 80px; height: 46px;
+      transform: translateX(-50%);
+      background:
+        repeating-linear-gradient(180deg, rgba(0,0,0,.35) 0 2px, rgba(0,0,0,0) 2px 7px);
+      opacity:.55;
+    }
+
+    /* Description */
+    .cDesc{
+      font-size: 11px;
+      color: rgba(232,238,252,.88);
+      line-height: 1.25;
+      min-height: 62px;
+    }
+    .cTags{
+      display:flex; gap:6px; flex-wrap:wrap;
+      margin-top:auto;
+    }
+    .tag{
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.16);
+      color: rgba(232,238,252,.9);
+    }
+    .tag.tE{ border-color: rgba(164,107,255,.30); }
+    .tag.tG{ border-color: rgba(92,224,166,.30); }
+    .tag.tT{ border-color: rgba(74,163,255,.30); }
+
+    /* Tooltip */
+    .tooltip{
+      position: fixed;
+      z-index: 9999;
+      pointer-events:none;
+      background: rgba(10,14,25,.92);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      padding: 10px 10px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.55);
+      width: 300px;
+      display:none;
+      transform: translate(12px, 12px);
+      backdrop-filter: blur(8px);
+    }
+    .tooltip b{ display:block; font-size: 12px; margin-bottom: 4px; }
+    .tooltip .sm{ color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .deltaLine{
+      margin-top: 6px;
+      display:flex;
+      gap: 8px;
+      flex-wrap:wrap;
+      color: rgba(232,238,252,.92);
+      font-size: 11px;
+    }
+    .delta{
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      display:inline-flex; gap:6px; align-items:center;
+    }
+    .delta i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+    .dE i{ background: var(--E); }
+    .dG i{ background: var(--G); }
+    .dT i{ background: var(--T); }
+
+    /* Intent */
+    .intent{
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 10px 12px;
+      display:flex; flex-direction:column; gap:6px;
+      min-height: 82px;
+    }
+    .intent b{ font-size: 13px; }
+    .intent span{ color: var(--muted); font-size: 12px; line-height: 1.2; }
+
+    /* Reward */
+    .rewardGrid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    .choices{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+      padding-top: 4px;
+    }
+    .center{
+      display:flex; justify-content:center; align-items:center;
+    }
+
+    /* Overlay event */
+    .overlay{
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+    }
+    .overlay.active{ display:flex; }
+    .eventCard{
+      width: min(720px, 92vw);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 30px 90px rgba(0,0,0,.7);
+      background:
+        radial-gradient(400px 240px at 20% 20%, rgba(164,107,255,.22), transparent 60%),
+        radial-gradient(400px 240px at 80% 40%, rgba(255,211,110,.16), transparent 60%),
+        radial-gradient(500px 260px at 50% 90%, rgba(92,224,166,.12), transparent 65%),
+        rgba(12,16,28,.92);
+      padding: 18px 18px 14px;
+      animation: pop .18s ease;
+    }
+    @keyframes pop{
+      from{ transform: translateY(10px) scale(.98); opacity:.0; }
+      to{ transform: translateY(0) scale(1); opacity:1; }
+    }
+    .eventCard h3{
+      margin:0 0 6px;
+      font-size: 16px;
+      letter-spacing:.2px;
+    }
+    .eventCard p{
+      margin: 0 0 10px;
+      color: rgba(232,238,252,.88);
+      line-height: 1.4;
+      font-size: 13px;
+    }
+    .eventCard .mini{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .eventActions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top: 10px;
+      flex-wrap:wrap;
+    }
+
+    /* Small helpers */
+    .kpi{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .kpi .box{
+      background: rgba(0,0,0,.20);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 10px 10px;
+    }
+    .kpi .box b{ font-size: 12px; }
+    .kpi .box .v{ font-size: 16px; font-weight: 900; margin-top: 6px; }
+    .kpi .box .s{ font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .hr{ height:1px; background: rgba(255,255,255,.10); margin: 10px 0; border-radius:999px; }
+
+    .smallText{ font-size: 12px; line-height:1.45; color: rgba(232,238,252,.88); }
+
+    /* Card play animation */
+    .playAnim{
+      position: fixed;
+      z-index: 9997;
+      width: var(--cardW);
+      height: var(--cardH);
+      border-radius: var(--radius);
+      pointer-events:none;
+      opacity: 1;
+      transform: translate(-50%,-50%) scale(1);
+      transition: transform .25s ease, opacity .25s ease;
+      box-shadow: 0 30px 90px rgba(0,0,0,.7);
+      border: 1px solid rgba(255,255,255,.16);
+      overflow:hidden;
+    }
+
+    @media (max-width: 980px){
+      .grid, .battleLayout{ grid-template-columns: 1fr; }
+      .big{ min-height: auto; }
+      .log{ height: 200px; }
+      .hudRow{ grid-template-columns: 1fr; }
+      :root{ --cardW: 160px; --cardH: 230px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title">
+        <h1>Axis of Cosmos</h1>
+        <div class="sub">Card battler/roguelike nhẹ — thuần HTML + CSS + JS (offline, 1 file). Cơ chế trung tâm: Trục Vũ Trụ (Entropy/Gaia/Tartarus).</div>
+      </div>
+      <div class="topBtns">
+        <button class="ghost" id="btnToStart" title="Về màn hình Start">Start</button>
+        <button class="ghost" id="btnSave" title="Lưu nhanh vào localStorage">Save</button>
+        <button class="ghost" id="btnLoad" title="Tải save từ localStorage">Load</button>
+      </div>
+    </header>
+
+    <!-- START SCREEN -->
+    <section id="startScreen" class="screen active">
+      <div class="grid">
+        <div class="panel">
+          <h2>Bắt đầu</h2>
+          <div class="smallText">
+            Chọn <b>Tổ Hệ</b> để nhận 3 thẻ khởi đầu đặc trưng. Bạn bắt đầu với 10 thẻ trung lập, tối đa Mana mỗi lượt là 10.
+            <div class="spacer"></div>
+            <b>Fate</b> dùng để can thiệp: <span class="muted">Reroll / Negate / Copy</span>. Fate tăng khi chơi thẻ đúng Tổ Hệ.
+            <div class="spacer"></div>
+            <b>Biến Cố Vũ Trụ</b> kích hoạt khi một thanh Axis &gt; 70.
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <span class="pill"><span class="dot" style="background:var(--E)"></span> Entropy &gt; 70: xáo trộn quy tắc</span>
+            <span class="pill"><span class="dot" style="background:var(--G)"></span> Gaia &gt; 70: sinh mầm sống</span>
+            <span class="pill"><span class="dot" style="background:var(--T)"></span> Tartarus &gt; 70: xiềng xích / nguyền</span>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="panel" style="padding:12px; background: rgba(0,0,0,.18); box-shadow:none;">
+            <div class="row" style="justify-content:space-between;">
+              <div>
+                <b style="font-size:12px">Seed (tùy chọn)</b>
+                <div class="muted" style="font-size:11px;margin-top:4px;">Seed cố định giúp replay “gần giống”.</div>
+              </div>
+              <input id="seedInput" type="number" min="1" step="1" style="
+                width:140px; padding:10px 10px; border-radius:12px;
+                border:1px solid rgba(255,255,255,.14);
+                background: rgba(0,0,0,.18);
+                color: var(--text);
+                font-weight:800;
+                outline:none;
+              " value="20260102"/>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="row" style="gap:10px;">
+            <button class="primary" id="pickPrimordial">Chọn Tổ Hệ: Nguyên sơ</button>
+            <button class="primary" id="pickTitan">Chọn Tổ Hệ: Titan</button>
+            <button class="primary" id="pickOlympian">Chọn Tổ Hệ: Olympia</button>
+          </div>
+
+          <div class="spacer"></div>
+          <div class="smallText muted">
+            Mẹo: đôi khi đẩy lệch Axis để kích hoạt Biến Cố là chiến thuật chủ động — nhưng quá đà có thể phản tác dụng.
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Luật thần thoại (tóm tắt)</h2>
+          <div class="kpi">
+            <div class="box">
+              <b>Nguyên sơ</b>
+              <div class="v">Đứt Mạch</div>
+              <div class="s">Tăng rift → thẻ sau có thể <b>0 cost</b> hoặc <b>khuếch đại</b>, nhưng đẩy Entropy.</div>
+            </div>
+            <div class="box">
+              <b>Titan</b>
+              <div class="v">Trọng Lực</div>
+              <div class="s">Tích lũy gravity → tăng hiệu quả công/ thủ, giảm dần mỗi lượt.</div>
+            </div>
+            <div class="box">
+              <b>Olympia</b>
+              <div class="v">Sắc Lệnh</div>
+              <div class="s">Chơi 3 thẻ Olympia trong 1 lượt → kích hoạt Decree: thưởng Fate + sát thương.</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <h2>Nội dung tối thiểu (đã có)</h2>
+          <div class="smallText">
+            ✔ Deck builder (10 thẻ cơ bản + 3 thẻ Tổ Hệ)<br/>
+            ✔ ≥ 20 thẻ mẫu (mỗi nhóm ≥ 5), mỗi thẻ có Axis delta<br/>
+            ✔ 6 kẻ địch/boss (mỗi chương 2) với pattern<br/>
+            ✔ Trạng thái: Burn / Freeze / Stun / Shield / Curse<br/>
+            ✔ UI: Start / Battle / Reward + tooltip + animation<br/>
+            ✔ Save/Load localStorage
+          </div>
+
+          <div class="spacer"></div>
+          <div class="smallText muted">
+            Gợi ý: Mục tiêu mỗi trận là giảm HP địch về 0. Nếu deck cạn hoàn toàn, bạn sẽ chịu “fatigue” khi rút bài.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BATTLE SCREEN -->
+    <section id="battleScreen" class="screen">
+      <div class="battleLayout">
+        <div class="panel">
+          <h2>Trục Vũ Trụ</h2>
+          <div class="axisWrap" id="axisWrap"></div>
+
+          <div class="hr"></div>
+
+          <h2>Tài nguyên</h2>
+          <div class="row">
+            <span class="pill"><span class="dot" style="background:var(--accent)"></span> Mana: <b id="manaText">0/0</b></span>
+            <span class="pill"><span class="dot" style="background:var(--gold)"></span> Fate: <b id="fateText">0</b></span>
+          </div>
+          <div class="spacer"></div>
+          <div class="row">
+            <span class="pill"><span class="dot" style="background:#bbb"></span> Trọng Lực: <b id="gravityText">0</b></span>
+            <span class="pill"><span class="dot" style="background:#ddd"></span> Đứt Mạch: <b id="riftText">0</b></span>
+            <span class="pill"><span class="dot" style="background:var(--gold)"></span> Sắc Lệnh: <b id="decreeText">0/3</b></span>
+          </div>
+
+          <div class="hr"></div>
+
+          <h2>Can thiệp (Fate)</h2>
+          <div class="smallText muted" style="margin-bottom:8px;">
+            Dùng Fate để bẻ lái định mệnh: reroll biến cố, negate intent địch, hoặc copy lá bài vừa đánh.
+          </div>
+          <div class="row">
+            <button id="btnReroll" title="Fate 2: Reroll (đổi ngẫu nhiên) nếu vừa kích hoạt Biến Cố Entropy">Reroll (2)</button>
+            <button id="btnNegate" title="Fate 3: Negate (hủy) hành động địch lượt này">Negate (3)</button>
+            <button id="btnCopy" title="Fate 2: Copy lá bài vừa đánh (không tốn Mana, nhưng vẫn tăng Axis)">Copy (2)</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <h2>Relic</h2>
+          <div class="smallText" id="relicList" style="min-height:54px; color:rgba(232,238,252,.88)"></div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <button class="primary" id="btnEndTurn">Kết thúc lượt</button>
+            <button class="ghost" id="btnDraw1">Rút 1 (Fate 1)</button>
+            <button class="danger" id="btnAbandon">Bỏ cuộc (mất run)</button>
+          </div>
+        </div>
+
+        <div class="panel big">
+          <div class="hudRow">
+            <div class="hpBox">
+              <div class="hpTop">
+                <b id="pName">Người Ký Khế</b>
+                <span>HP: <b id="pHPText">0/0</b></span>
+              </div>
+              <div class="hpBar"><i id="pHPBar" style="background: linear-gradient(90deg, rgba(92,224,166,.9), rgba(92,224,166,.35)); width:60%"></i></div>
+              <div class="statusLine" id="pStatus"></div>
+            </div>
+
+            <div class="hpBox">
+              <div class="hpTop">
+                <b id="eName">Kẻ Địch</b>
+                <span>HP: <b id="eHPText">0/0</b></span>
+              </div>
+              <div class="hpBar"><i id="eHPBar" style="background: linear-gradient(90deg, rgba(255,107,107,.9), rgba(255,107,107,.35)); width:60%"></i></div>
+              <div class="statusLine" id="eStatus"></div>
+            </div>
+          </div>
+
+          <div class="intent">
+            <b>Ý định địch</b>
+            <span id="intentText" class="muted">...</span>
+          </div>
+
+          <div class="log" id="log"></div>
+
+          <div>
+            <div class="row" style="justify-content:space-between; align-items:baseline;">
+              <div class="muted" style="font-size:12px;">
+                Tay bài (<b id="handCount">0</b>) — Bộ rút: <b id="drawCount">0</b> · Bỏ: <b id="discardCount">0</b>
+              </div>
+              <div class="muted" style="font-size:12px;">
+                Chương: <b id="chapterText">-</b> · Trận: <b id="matchText">-</b>
+              </div>
+            </div>
+            <div class="hand" id="hand"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REWARD SCREEN -->
+    <section id="rewardScreen" class="screen">
+      <div class="panel rewardGrid">
+        <div>
+          <h2>Phần thưởng</h2>
+          <div class="smallText muted" id="rewardIntro">Chọn 1 trong 3 lá bài để thêm vào deck.</div>
+        </div>
+
+        <div class="choices" id="rewardChoices"></div>
+
+        <div class="hr"></div>
+
+        <div class="row" style="justify-content:space-between;">
+          <div class="smallText" id="postRewardInfo"></div>
+          <div class="row">
+            <button class="ghost" id="btnUpgrade" title="Nâng cấp 1 lá ngẫu nhiên trong deck (nếu có)">Nâng cấp ngẫu nhiên</button>
+            <button class="primary" id="btnNextBattle">Tiếp tục</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Tooltip -->
+  <div class="tooltip" id="tooltip"></div>
+
+  <!-- Event Overlay -->
+  <div class="overlay" id="overlay">
+    <div class="eventCard">
+      <h3 id="eventTitle">Biến Cố Vũ Trụ</h3>
+      <p id="eventDesc">...</p>
+      <div class="mini" id="eventMini"></div>
+      <div class="eventActions">
+        <button class="ghost" id="eventClose">Tiếp tục</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================================================
+   Axis of Cosmos — Single-file card battler
+   - No external libs
+   - Offline HTML/CSS/JS only
+   - Seeded RNG
+   ========================================================= */
+
+/* ----------------------- RNG ---------------------------- */
+function mulberry32(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+/* ---------------------- Data ---------------------------- */
+const GROUPS = {
+  NEUTRAL: "NEUTRAL",
+  PRIMORDIAL: "PRIMORDIAL",
+  TITAN: "TITAN",
+  OLYMPIAN: "OLYMPIAN",
+};
+
+const TAGS = [
+  "Sấm Sét","Biển","Lửa","Mùa Màng","Chiến Tranh","Tình Ái",
+  "Rèn","Sứ Giả","Trật Tự","Ký Ức","Ánh Sáng","Thời Gian","Luật"
+];
+
+/* Utility: create card objects with upgrade variants */
+function makeCard(def){
+  // def: {id,name,group,cost,text,tags,art,axis:{E,G,T}, play:(ctx)=>void, up?:{...}}
+  return def;
+}
+
+/* ------------------ Cards (>=20) ------------------------ */
+/* 10 neutral base + >=5 per group.
+   NOTE: Olympia fixed 12: Zeus, Hera, Poseidon, Demeter, Athena, Apollo, Artemis, Ares, Aphrodite, Hephaestus, Hermes, Hestia.
+*/
+const CARDS = [
+  /* ---------- Neutral (10) ---------- */
+  makeCard({
+    id:"N_STRIKE", name:"Đòn Đánh", group:GROUPS.NEUTRAL, cost:1,
+    text:"Gây 6 sát thương.",
+    tags:["Chiến Tranh"], art:"scroll",
+    axis:{E:+2,G:0,T:0},
+    play(ctx){ ctx.dealEnemy(6); }
+  }),
+  makeCard({
+    id:"N_DEFEND", name:"Thủ Vệ", group:GROUPS.NEUTRAL, cost:1,
+    text:"Nhận 6 Khiên (Shield).",
+    tags:["Trật Tự"], art:"scroll",
+    axis:{E:0,G:+1,T:0},
+    play(ctx){ ctx.addStatus(ctx.player,"Shield",6,1); }
+  }),
+  makeCard({
+    id:"N_MEND", name:"Băng Bó", group:GROUPS.NEUTRAL, cost:1,
+    text:"Hồi 5 HP.",
+    tags:["Mùa Màng"], art:"leaf",
+    axis:{E:0,G:+4,T:0},
+    play(ctx){ ctx.healPlayer(5); }
+  }),
+  makeCard({
+    id:"N_SPARK", name:"Tia Lửa", group:GROUPS.NEUTRAL, cost:1,
+    text:"Gây 4 sát thương và gây Burn 2 (2 lượt).",
+    tags:["Lửa"], art:"forge",
+    axis:{E:+1,G:0,T:+1},
+    play(ctx){ ctx.dealEnemy(4); ctx.addStatus(ctx.enemy,"Burn",2,2); }
+  }),
+  makeCard({
+    id:"N_CHILL", name:"Lạnh Giá", group:GROUPS.NEUTRAL, cost:1,
+    text:"Gây Freeze 1 (2 lượt). Freeze: giảm Mana đầu lượt.",
+    tags:["Biển"], art:"waves",
+    axis:{E:0,G:0,T:+2},
+    play(ctx){ ctx.addStatus(ctx.enemy,"Freeze",1,2); }
+  }),
+  makeCard({
+    id:"N_FOCUS", name:"Tập Trung", group:GROUPS.NEUTRAL, cost:0,
+    text:"Rút 1. Nhận 1 Fate nếu tay còn ≥ 3 lá.",
+    tags:["Ký Ức"], art:"scroll",
+    axis:{E:+1,G:0,T:0},
+    play(ctx){ ctx.draw(1); if(ctx.hand.length>=3) ctx.gainFate(1,"Tập Trung"); }
+  }),
+  makeCard({
+    id:"N_WARD", name:"Hộ Ấn", group:GROUPS.NEUTRAL, cost:2,
+    text:"Nhận 10 Khiên. Giảm Entropy 4 (ổn định).",
+    tags:["Luật"], art:"scroll",
+    axis:{E:-4,G:+1,T:0},
+    play(ctx){ ctx.addStatus(ctx.player,"Shield",10,1); }
+  }),
+  makeCard({
+    id:"N_CLEANSE", name:"Tẩy Uế", group:GROUPS.NEUTRAL, cost:1,
+    text:"Xóa 1 hiệu ứng xấu trên bạn (Burn/Freeze/Stun/Curse). Giảm Tartarus 3.",
+    tags:["Trật Tự"], art:"scroll",
+    axis:{E:0,G:0,T:-3},
+    play(ctx){ ctx.cleansePlayer(1); }
+  }),
+  makeCard({
+    id:"N_INSIGHT", name:"Linh Cảm", group:GROUPS.NEUTRAL, cost:1,
+    text:"Scry 2 (xem 2 lá đầu bộ rút, chọn bỏ 0–2), rồi rút 1.",
+    tags:["Ký Ức"], art:"noise",
+    axis:{E:+2,G:0,T:0},
+    play(ctx){ ctx.scry(2); ctx.draw(1); }
+  }),
+  makeCard({
+    id:"N_GAMBLE", name:"Đánh Cược", group:GROUPS.NEUTRAL, cost:0,
+    text:"Bỏ 1 lá bất kỳ trên tay → rút 2. Tăng Entropy 3.",
+    tags:["Sứ Giả"], art:"noise",
+    axis:{E:+3,G:0,T:0},
+    play(ctx){ ctx.requestDiscard(1, () => ctx.draw(2)); }
+  }),
+
+  /* ---------- Primordial (>=5) ---------- */
+  makeCard({
+    id:"P_CHAOS_RIFT", name:"Chaos — Khe Nứt", group:GROUPS.PRIMORDIAL, cost:1,
+    text:"Kích hoạt Đứt Mạch +1. Hiệu ứng ngẫu nhiên: gây 5 sát thương HOẶC rút 2. (Tăng Entropy mạnh).",
+    tags:["Đứt Mạch","Hỗn Mang"], art:"noise",
+    axis:{E:+10,G:0,T:+2},
+    play(ctx){
+      ctx.addRift(1);
+      if(ctx.rng()<0.5){ ctx.dealEnemy(5); ctx.logSys("Chaos chọn: sát thương."); }
+      else{ ctx.draw(2); ctx.logSys("Chaos chọn: rút bài."); }
+    }
+  }),
+  makeCard({
+    id:"P_GAIA_SPROUT", name:"Gaia — Mầm Sống", group:GROUPS.PRIMORDIAL, cost:1,
+    text:"Hồi 4 HP. Tạo 1 token 'Mầm' vào bỏ bài (cost 0: hồi 3).",
+    tags:["Mùa Màng","Sinh Trưởng"], art:"leaf",
+    axis:{E:0,G:+10,T:0},
+    play(ctx){
+      ctx.healPlayer(4);
+      ctx.addCardToDiscard("TOK_SEED");
+    }
+  }),
+  makeCard({
+    id:"P_TART_SHACKLES", name:"Tartarus — Xiềng Xích", group:GROUPS.PRIMORDIAL, cost:2,
+    text:"Gây 6 sát thương. Gây Curse 1 (3 lượt).",
+    tags:["Vực Sâu","Nguyền"], art:"abyss",
+    axis:{E:+1,G:0,T:+10},
+    play(ctx){ ctx.dealEnemy(6); ctx.addStatus(ctx.enemy,"Curse",1,3); }
+  }),
+  makeCard({
+    id:"P_VOID_PULL", name:"Tartarus — Kéo Sâu", group:GROUPS.PRIMORDIAL, cost:1,
+    text:"Gây 4 sát thương. Nếu địch đang bị Curse: Stun 1 (1 lượt).",
+    tags:["Vực Sâu","Chiến Tranh"], art:"abyss",
+    axis:{E:0,G:0,T:+8},
+    play(ctx){
+      ctx.dealEnemy(4);
+      if(ctx.getStatus(ctx.enemy,"Curse")>0){
+        ctx.addStatus(ctx.enemy,"Stun",1,1);
+        ctx.logGood("Kéo Sâu: địch bị Stun!");
+      }
+    }
+  }),
+  makeCard({
+    id:"P_PRIMAL_BREAK", name:"Chaos — Đứt Mạch", group:GROUPS.PRIMORDIAL, cost:0,
+    text:"Đứt Mạch +2. Lá kế tiếp bạn đánh có 50%: cost 0, hoặc 50%: nhân đôi hiệu ứng (không nhân đôi Axis).",
+    tags:["Đứt Mạch","Hỗn Mang"], art:"noise",
+    axis:{E:+6,G:0,T:0},
+    play(ctx){
+      ctx.addRift(2);
+      ctx.player.flags.nextCardWarp = true;
+      ctx.logSys("Đứt Mạch: lá kế tiếp có thể 0 cost hoặc nhân đôi.");
+    }
+  }),
+  makeCard({
+    id:"P_GAIA_ROOTS", name:"Gaia — Rễ Bền", group:GROUPS.PRIMORDIAL, cost:1,
+    text:"Nhận 5 Khiên. Nếu Gaia > 50: rút 1.",
+    tags:["Sinh Trưởng","Trật Tự"], art:"leaf",
+    axis:{E:0,G:+7,T:0},
+    play(ctx){
+      ctx.addStatus(ctx.player,"Shield",5,1);
+      if(ctx.axis.G>50){ ctx.draw(1); ctx.logGood("Rễ Bền: Gaia dồi dào → rút 1."); }
+    }
+  }),
+
+  /* ---------- Titan (>=5) ---------- */
+  makeCard({
+    id:"T_CRONUS_SICKLE", name:"Cronus — Lưỡi Liềm Thời Gian", group:GROUPS.TITAN, cost:2,
+    text:"Gây 9 sát thương. Trọng Lực +2. Nếu Entropy > 60: giảm cost lá này còn 1 (trong lượt).",
+    tags:["Thời Gian","Chiến Tranh"], art:"sickle",
+    axis:{E:+2,G:0,T:+2},
+    play(ctx){ ctx.dealEnemy(9); ctx.addGravity(2); }
+  }),
+  makeCard({
+    id:"T_OCEANUS_FLOW", name:"Oceanus — Dòng Vô Tận", group:GROUPS.TITAN, cost:1,
+    text:"Rút 2. Freeze địch 1 (1 lượt). Trọng Lực +1.",
+    tags:["Biển"], art:"waves",
+    axis:{E:0,G:+1,T:+4},
+    play(ctx){ ctx.draw(2); ctx.addStatus(ctx.enemy,"Freeze",1,1); ctx.addGravity(1); }
+  }),
+  makeCard({
+    id:"T_HYPERION_RADIANCE", name:"Hyperion — Nhật Quang Titan", group:GROUPS.TITAN, cost:1,
+    text:"Gây 5 sát thương. Nếu bạn có Trọng Lực ≥ 3: Burn 3 (2 lượt).",
+    tags:["Ánh Sáng","Lửa"], art:"forge",
+    axis:{E:+1,G:0,T:0},
+    play(ctx){
+      ctx.dealEnemy(5);
+      if(ctx.player.gravity>=3){ ctx.addStatus(ctx.enemy,"Burn",3,2); ctx.logGood("Nhật Quang: Trọng Lực cao → Burn!"); }
+      ctx.addGravity(1);
+    }
+  }),
+  makeCard({
+    id:"T_THEMIS_BALANCE", name:"Themis — Cán Cân", group:GROUPS.TITAN, cost:1,
+    text:"Ổn định: Giảm Entropy 6, giảm Tartarus 4, tăng Gaia 2. Nhận 4 Khiên.",
+    tags:["Luật","Trật Tự"], art:"scroll",
+    axis:{E:-6,G:+2,T:-4},
+    play(ctx){ ctx.addStatus(ctx.player,"Shield",4,1); ctx.addGravity(1); }
+  }),
+  makeCard({
+    id:"T_MNEMOSYNE_ARCHIVE", name:"Mnemosyne — Thư Khố Ký Ức", group:GROUPS.TITAN, cost:1,
+    text:"Lấy 1 lá bất kỳ từ bỏ bài lên tay. Trọng Lực +1.",
+    tags:["Ký Ức"], art:"scroll",
+    axis:{E:+1,G:0,T:0},
+    play(ctx){ ctx.recallFromDiscard(); ctx.addGravity(1); }
+  }),
+  makeCard({
+    id:"T_RHEA_ENDURE", name:"Rhea — Nhẫn Nại", group:GROUPS.TITAN, cost:2,
+    text:"Nhận 12 Khiên. Nếu bạn đang bị Curse: xóa 1 Curse.",
+    tags:["Trật Tự"], art:"scroll",
+    axis:{E:0,G:+2,T:-1},
+    play(ctx){
+      ctx.addStatus(ctx.player,"Shield",12,1);
+      if(ctx.getStatus(ctx.player,"Curse")>0){ ctx.removeStatus(ctx.player,"Curse",1); ctx.logGood("Nhẫn Nại: xóa 1 Curse."); }
+      ctx.addGravity(2);
+    }
+  }),
+
+  /* ---------- Olympian (>=5) ---------- */
+  makeCard({
+    id:"O_ZEUS_BOLT", name:"Zeus — Tia Sét", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Gây 7 sát thương. Nếu đây là thẻ Olympia thứ 3 trong lượt: +4 sát thương.",
+    tags:["Sấm Sét","Luật"], art:"lightning",
+    axis:{E:+2,G:0,T:0},
+    play(ctx){
+      let bonus = (ctx.player.decreeCount>=2) ? 4 : 0;
+      ctx.dealEnemy(7+bonus);
+    }
+  }),
+  makeCard({
+    id:"O_ATHENA_STRAT", name:"Athena — Mưu Lược", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Nhận 7 Khiên. Scry 2. (Tăng Sắc Lệnh).",
+    tags:["Trật Tự","Luật"], art:"scroll",
+    axis:{E:0,G:+1,T:0},
+    play(ctx){ ctx.addStatus(ctx.player,"Shield",7,1); ctx.scry(2); }
+  }),
+  makeCard({
+    id:"O_POSEIDON_TIDE", name:"Poseidon — Sóng Thần", group:GROUPS.OLYMPIAN, cost:2,
+    text:"Gây 8 sát thương. Freeze 1 (2 lượt).",
+    tags:["Biển"], art:"waves",
+    axis:{E:0,G:0,T:+3},
+    play(ctx){ ctx.dealEnemy(8); ctx.addStatus(ctx.enemy,"Freeze",1,2); }
+  }),
+  makeCard({
+    id:"O_ARES_FURY", name:"Ares — Cuồng Chiến", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Gây 6 sát thương. Nếu địch đang Burn: gây thêm 4.",
+    tags:["Chiến Tranh"], art:"forge",
+    axis:{E:+3,G:0,T:0},
+    play(ctx){
+      let b = ctx.getStatus(ctx.enemy,"Burn")>0 ? 4 : 0;
+      ctx.dealEnemy(6+b);
+    }
+  }),
+  makeCard({
+    id:"O_APOLLO_LIGHT", name:"Apollo — Tia Sáng", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Hồi 4 HP và gây 4 sát thương. Nếu Gaia > 60: hồi thêm 3.",
+    tags:["Ánh Sáng"], art:"lightning",
+    axis:{E:0,G:+4,T:0},
+    play(ctx){
+      ctx.healPlayer(4 + (ctx.axis.G>60 ? 3 : 0));
+      ctx.dealEnemy(4);
+    }
+  }),
+  makeCard({
+    id:"O_ARTEMIS_HUNT", name:"Artemis — Săn Trăng", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Gây 5 sát thương. Nếu tay bạn còn ≤ 3 lá: rút 1.",
+    tags:["Ánh Sáng","Chiến Tranh"], art:"scroll",
+    axis:{E:+1,G:0,T:0},
+    play(ctx){ ctx.dealEnemy(5); if(ctx.hand.length<=3) ctx.draw(1); }
+  }),
+  makeCard({
+    id:"O_HERMES_DASH", name:"Hermes — Lướt Gió", group:GROUPS.OLYMPIAN, cost:0,
+    text:"Rút 1. Nhận 1 Fate. (Tăng Sắc Lệnh).",
+    tags:["Sứ Giả"], art:"scroll",
+    axis:{E:+1,G:0,T:0},
+    play(ctx){ ctx.draw(1); ctx.gainFate(1,"Hermes"); }
+  }),
+  makeCard({
+    id:"O_HEPHAESTUS_FORGE", name:"Hephaestus — Lò Rèn", group:GROUPS.OLYMPIAN, cost:2,
+    text:"Nhận 8 Khiên. Gây 4 sát thương. Burn 2 (2 lượt).",
+    tags:["Rèn","Lửa"], art:"forge",
+    axis:{E:0,G:+1,T:+1},
+    play(ctx){
+      ctx.addStatus(ctx.player,"Shield",8,1);
+      ctx.dealEnemy(4);
+      ctx.addStatus(ctx.enemy,"Burn",2,2);
+    }
+  }),
+  makeCard({
+    id:"O_HERA_DECREE", name:"Hera — Sắc Chỉ", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Đặt Luật: giảm sát thương địch gây ra -3 (1 lượt). Nếu đủ 3 Sắc Lệnh: +1 Fate.",
+    tags:["Luật","Trật Tự"], art:"scroll",
+    axis:{E:-2,G:0,T:0},
+    play(ctx){
+      ctx.enemy.flags.atkDown = (ctx.enemy.flags.atkDown||0) + 3;
+      ctx.logSys("Hera: Luật đặt xuống — địch -3 sát thương lượt này.");
+      if(ctx.player.decreeCount>=2) ctx.gainFate(1,"Hera");
+    }
+  }),
+  makeCard({
+    id:"O_DEMETER_HARVEST", name:"Demeter — Mùa Gặt", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Tạo 2 token 'Mầm' vào bỏ bài. Hồi 2 HP. Nếu Gaia > 70: tạo thêm 1.",
+    tags:["Mùa Màng"], art:"leaf",
+    axis:{E:0,G:+6,T:0},
+    play(ctx){
+      ctx.addCardToDiscard("TOK_SEED");
+      ctx.addCardToDiscard("TOK_SEED");
+      if(ctx.axis.G>70) ctx.addCardToDiscard("TOK_SEED");
+      ctx.healPlayer(2);
+    }
+  }),
+  makeCard({
+    id:"O_APHRODITE_CHARM", name:"Aphrodite — Mê Hoặc", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Làm địch Stun 1 (1 lượt). Tăng Entropy 2 (dư âm cảm xúc).",
+    tags:["Tình Ái"], art:"noise",
+    axis:{E:+2,G:0,T:0},
+    play(ctx){ ctx.addStatus(ctx.enemy,"Stun",1,1); }
+  }),
+  makeCard({
+    id:"O_HESTIA_HEARTH", name:"Hestia — Bếp Lửa", group:GROUPS.OLYMPIAN, cost:1,
+    text:"Hồi 6 HP. Giảm Tartarus 4. (Ấm áp hóa giải vực sâu).",
+    tags:["Lửa","Trật Tự"], art:"forge",
+    axis:{E:0,G:+3,T:-4},
+    play(ctx){ ctx.healPlayer(6); }
+  }),
+
+  /* ---------- Tokens (not counted as reward pool maybe) ---------- */
+  makeCard({
+    id:"TOK_SEED", name:"Token — Mầm", group:GROUPS.NEUTRAL, cost:0,
+    text:"Hồi 3 HP. Tăng Gaia 3. (Token, sẽ bị Exhaust).",
+    tags:["Sinh Trưởng"], art:"leaf",
+    axis:{E:0,G:+3,T:0},
+    play(ctx){ ctx.healPlayer(3); ctx.exhausting = true; }
+  }),
+  makeCard({
+    id:"TOK_WISP", name:"Token — U Linh Nguyền", group:GROUPS.NEUTRAL, cost:1,
+    text:"Gây 3 sát thương. Bạn nhận Curse 1 (2 lượt). (Sinh ra từ Tartarus).",
+    tags:["Nguyền"], art:"abyss",
+    axis:{E:0,G:0,T:+2},
+    play(ctx){ ctx.dealEnemy(3); ctx.addStatus(ctx.player,"Curse",1,2); }
+  }),
+];
+
+/* Reward pool excludes tokens by default */
+const REWARD_POOL = CARDS.filter(c => !c.id.startsWith("TOK_"));
+
+/* -------------------- Enemies (6) ------------------------ */
+const ENEMIES = {
+  PRIMORDIAL: [
+    {
+      id:"E_ECHO_CHAOS",
+      name:"Echo of Chaos (Chaos)",
+      maxHP: 48,
+      chapter:1,
+      desc:"Mô phỏng hỗn mang: đổi nhịp tấn công, đôi khi đảo trục.",
+      pattern:[
+        {type:"attack", amount:7, text:"Đánh 7."},
+        {type:"shuffleAxis", amount:0, text:"Xáo trộn: +Entropy 8, đảo tay 1 lần."},
+        {type:"attack", amount:10, text:"Đánh 10 (nặng)."},
+      ]
+    },
+    {
+      id:"E_PROTO_GAIA",
+      name:"Proto-Beast (Gaia)",
+      maxHP: 56,
+      chapter:1,
+      desc:"Sinh trưởng hoang dã: tự hồi, dựng khiên, lan burn nhẹ.",
+      pattern:[
+        {type:"defend", amount:8, text:"Nhận Khiên 8."},
+        {type:"attackBurn", amount:6, burn:2, text:"Đánh 6 + Burn 2."},
+        {type:"heal", amount:6, text:"Hồi 6 HP."},
+      ]
+    }
+  ],
+  TITAN: [
+    {
+      id:"E_CRONUS",
+      name:"Cronus (Titan)",
+      maxHP: 68,
+      chapter:2,
+      desc:"Thời gian đè nặng: tích lũy debuff và cú chém lớn.",
+      pattern:[
+        {type:"curse", amount:1, dur:3, text:"Gây Curse 1 (3 lượt)."},
+        {type:"attack", amount:9, text:"Đánh 9."},
+        {type:"attack", amount:14, text:"Chém 14."},
+        {type:"stun", amount:1, dur:1, text:"Stun 1 (1 lượt)."},
+      ]
+    },
+    {
+      id:"E_OCEANUS",
+      name:"Oceanus (Titan)",
+      maxHP: 62,
+      chapter:2,
+      desc:"Dòng vô tận: làm chậm bằng Freeze, rồi dồn sát thương.",
+      pattern:[
+        {type:"freeze", amount:1, dur:2, text:"Freeze 1 (2 lượt)."},
+        {type:"attack", amount:10, text:"Đánh 10."},
+        {type:"defend", amount:10, text:"Nhận Khiên 10."},
+        {type:"attack", amount:12, text:"Đánh 12."},
+      ]
+    }
+  ],
+  OLYMPIAN: [
+    {
+      id:"E_ZEUS",
+      name:"Zeus (Olympia)",
+      maxHP: 74,
+      chapter:3,
+      desc:"Luật sét: trừng phạt khi bạn dùng quá nhiều thẻ rẻ.",
+      pattern:[
+        {type:"lawPunish", amount:0, text:"Luật: nếu bạn đã đánh ≥3 lá lượt trước, nhận 3 sát thương."},
+        {type:"attack", amount:12, text:"Sét 12."},
+        {type:"attackStun", amount:8, dur:1, text:"Đánh 8 + Stun 1."},
+        {type:"defend", amount:12, text:"Nhận Khiên 12."},
+      ]
+    },
+    {
+      id:"E_ATHENA",
+      name:"Athena (Olympia)",
+      maxHP: 70,
+      chapter:3,
+      desc:"Chiến lược: dựng khiên, phản công, và khóa nhịp bạn.",
+      pattern:[
+        {type:"defend", amount:14, text:"Nhận Khiên 14."},
+        {type:"attack", amount:11, text:"Đánh 11."},
+        {type:"curse", amount:1, dur:2, text:"Gây Curse 1 (2 lượt)."},
+        {type:"attack", amount:15, text:"Đánh 15 (kết liễu)."},
+      ]
+    }
+  ]
+};
+
+/* -------------------- Relics ---------------------------- */
+const RELICS = [
+  {
+    id:"R_LIGHTNING_SEAL",
+    name:"Ấn Lôi Đình",
+    desc:"+1 sát thương cho mỗi lần bạn kích hoạt Sắc Lệnh (Decree).",
+    onDecree(ctx){ ctx.enemyTakeDirect(1); ctx.logGood("Relic Ấn Lôi Đình: +1 sát thương."); }
+  },
+  {
+    id:"R_STONE_TABLET",
+    name:"Bia Đá Titan",
+    desc:"Mỗi lượt, nếu Trọng Lực ≥ 3: nhận 2 Khiên.",
+    onTurnStart(ctx){
+      if(ctx.player.gravity>=3){ ctx.addStatus(ctx.player,"Shield",2,1); ctx.logSys("Relic Bia Đá Titan: +2 Khiên."); }
+    }
+  },
+  {
+    id:"R_PRIMAL_ECHO",
+    name:"Dư Âm Nguyên Sơ",
+    desc:"Khi bạn dùng Đứt Mạch (rift) làm lá kế tiếp 0 cost: +1 Fate.",
+    onWarpFree(ctx){ ctx.gainFate(1,"Dư Âm Nguyên Sơ"); }
+  },
+  {
+    id:"R_HEARTH_COAL",
+    name:"Than Bếp Hestia",
+    desc:"Khi HP bạn < 40% và Gaia > 50: hồi 2 HP vào cuối lượt.",
+    onTurnEnd(ctx){
+      if(ctx.player.hp < ctx.player.maxHP*0.4 && ctx.axis.G>50){
+        ctx.healPlayer(2);
+        ctx.logGood("Relic Than Bếp: hồi 2 HP.");
+      }
+    }
+  },
+  {
+    id:"R_ABYSS_CHAIN",
+    name:"Xích Vực",
+    desc:"Khi Tartarus kích hoạt Biến Cố: địch nhận Curse 1 (2 lượt).",
+    onEvent(ctx, kind){
+      if(kind==="TARTARUS"){ ctx.addStatus(ctx.enemy,"Curse",1,2); ctx.logSys("Relic Xích Vực: địch +Curse."); }
+    }
+  },
+  {
+    id:"R_CHAOS_DICE",
+    name:"Xúc Xắc Chaos",
+    desc:"Khi Entropy kích hoạt Biến Cố: rút 1 và +1 Mana lượt này.",
+    onEvent(ctx, kind){
+      if(kind==="ENTROPY"){ ctx.draw(1); ctx.mana = Math.min(ctx.maxMana, ctx.mana+1); ctx.logSys("Relic Xúc Xắc Chaos: rút 1, +1 Mana."); }
+    }
+  }
+];
+
+/* ------------------- Game State ------------------------- */
+const LS_KEY = "axis_of_cosmos_save_v1";
+
+const state = {
+  screen:"start",
+
+  seed: 20260102,
+  rng: mulberry32(20260102),
+
+  ancestry: GROUPS.NEUTRAL,
+
+  run: {
+    chapter: 1,       // 1..3
+    matchIndex: 0,    // progress within chapter
+    matchesInChapter: 4, // random 3..5
+    alive: true
+  },
+
+  axis: {E: 25, G: 25, T: 25},
+  lastEvent: null,          // {kind, payload} if just triggered and reroll is allowed
+  eventJustTriggered: false,
+
+  player: {
+    name:"Người Ký Khế",
+    hp: 60,
+    maxHP: 60,
+    statuses: {},           // {Burn:{v,d}, ...}
+    flags: {},
+    gravity: 0,
+    rift: 0,
+    decreeCount: 0,
+    cardsPlayedLastTurn: 0
+  },
+  enemy: null,
+
+  deck: [],     // array of card ids
+  draw: [],
+  discard: [],
+  hand: [],
+  exhaust: [],
+
+  mana: 0,
+  maxMana: 10,
+  baseMana: 3,
+  fate: 0,
+
+  lastPlayedCardId: null,
+  enemySkipThisTurn: false,
+
+  relics: [],
+
+  logLines: []
+};
+
+/* ------------------- DOM helpers ------------------------ */
+const $ = (sel) => document.querySelector(sel);
+const startScreen = $("#startScreen");
+const battleScreen = $("#battleScreen");
+const rewardScreen = $("#rewardScreen");
+
+const tooltip = $("#tooltip");
+
+function showScreen(name){
+  state.screen = name;
+  startScreen.classList.toggle("active", name==="start");
+  battleScreen.classList.toggle("active", name==="battle");
+  rewardScreen.classList.toggle("active", name==="reward");
+}
+
+/* ------------------- Logging ---------------------------- */
+function nowTag(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mm = String(d.getMinutes()).padStart(2,"0");
+  const ss = String(d.getSeconds()).padStart(2,"0");
+  return `${hh}:${mm}:${ss}`;
+}
+function pushLog(html){
+  state.logLines.push(html);
+  if(state.logLines.length>220) state.logLines.shift();
+  renderLog();
+}
+function logGood(msg){ pushLog(`<span class="t">${nowTag()}</span> <span class="good">✦</span> ${escapeHtml(msg)}`); }
+function logBad(msg){ pushLog(`<span class="t">${nowTag()}</span> <span class="bad">✖</span> ${escapeHtml(msg)}`); }
+function logSys(msg){ pushLog(`<span class="t">${nowTag()}</span> <span class="sys">◆</span> ${escapeHtml(msg)}`); }
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ------------------- Card lookup ------------------------ */
+function getCardById(id){
+  const c = CARDS.find(x => x.id===id);
+  if(!c) throw new Error("Card not found: "+id);
+  return c;
+}
+
+/* ------------------- Core Mechanics --------------------- */
+function seededPick(arr){
+  return arr[Math.floor(state.rng()*arr.length)];
+}
+function shuffleInPlace(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(state.rng()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function chapterName(ch){
+  if(ch===1) return "Nguyên sơ";
+  if(ch===2) return "Titan";
+  return "Olympia";
+}
+
+function rollMatchesInChapter(){
+  // 3..5
+  return 3 + Math.floor(state.rng()*3);
+}
+
+function initNewRun(ancestry, seed){
+  state.seed = seed|0;
+  state.rng = mulberry32(state.seed);
+
+  state.ancestry = ancestry;
+
+  state.run = { chapter:1, matchIndex:0, matchesInChapter: rollMatchesInChapter(), alive:true };
+  state.axis = {E: 25, G: 25, T: 25};
+  state.lastEvent = null;
+  state.eventJustTriggered = false;
+
+  state.player = {
+    name:"Người Ký Khế",
+    hp: 60, maxHP: 60,
+    statuses: {}, flags: {},
+    gravity: 0, rift: 0, decreeCount: 0, cardsPlayedLastTurn: 0
+  };
+  state.enemy = null;
+
+  state.deck = buildStartingDeck(ancestry);
+  state.draw = [];
+  state.discard = [];
+  state.hand = [];
+  state.exhaust = [];
+
+  state.mana = 0;
+  state.baseMana = 3;
+  state.maxMana = 10;
+  state.fate = 1; // tiny start
+  state.lastPlayedCardId = null;
+  state.enemySkipThisTurn = false;
+
+  state.relics = [];
+  state.logLines = [];
+}
+
+function buildStartingDeck(ancestry){
+  // 10 neutral basics + 3 ancestry starters
+  const base = ["N_STRIKE","N_STRIKE","N_STRIKE","N_DEFEND","N_DEFEND","N_MEND","N_SPARK","N_CHILL","N_FOCUS","N_WARD"];
+  let starters = [];
+  if(ancestry===GROUPS.PRIMORDIAL) starters = ["P_CHAOS_RIFT","P_GAIA_SPROUT","P_TART_SHACKLES"];
+  if(ancestry===GROUPS.TITAN) starters = ["T_CRONUS_SICKLE","T_OCEANUS_FLOW","T_THEMIS_BALANCE"];
+  if(ancestry===GROUPS.OLYMPIAN) starters = ["O_ZEUS_BOLT","O_ATHENA_STRAT","O_HERMES_DASH"];
+  return base.concat(starters);
+}
+
+/* ------------------- Status system ---------------------- */
+function ensureStatus(entity, name){
+  if(!entity.statuses[name]) entity.statuses[name] = {v:0, d:0};
+  return entity.statuses[name];
+}
+function getStatus(entity, name){
+  return entity.statuses[name]?.v || 0;
+}
+function addStatus(entity, name, value, duration){
+  const st = ensureStatus(entity, name);
+  st.v += value;
+  st.d = Math.max(st.d, duration);
+}
+function removeStatus(entity, name, value){
+  const st = entity.statuses[name];
+  if(!st) return;
+  st.v = Math.max(0, st.v - value);
+  if(st.v===0) delete entity.statuses[name];
+}
+function decayStatuses(entity){
+  for(const k of Object.keys(entity.statuses)){
+    entity.statuses[k].d -= 1;
+    if(entity.statuses[k].d<=0){
+      delete entity.statuses[k];
+    }
+  }
+}
+
+/* ------------------- Damage / shield -------------------- */
+function applyDamage(target, amount){
+  amount = Math.max(0, Math.floor(amount));
+  let shield = getStatus(target,"Shield");
+  if(shield>0){
+    const used = Math.min(shield, amount);
+    removeStatus(target,"Shield", used);
+    amount -= used;
+  }
+  if(amount>0){
+    target.hp = Math.max(0, target.hp - amount);
+  }
+  return amount;
+}
+
+/* ------------------- Turn helpers ----------------------- */
+function resetFlagsForTurn(){
+  state.player.flags = state.player.flags || {};
+  state.enemy.flags = state.enemy.flags || {};
+  state.player.flags.warpUsedThisTurn = false;
+  state.eventJustTriggered = false;
+  state.lastEvent = null;
+  state.enemySkipThisTurn = false;
+}
+
+/* ------------------- Deck operations -------------------- */
+function refillDrawIfNeeded(){
+  if(state.draw.length===0 && state.discard.length>0){
+    state.draw = shuffleInPlace(state.discard.splice(0));
+    logSys("Xáo lại bỏ bài → bộ rút.");
+  }
+}
+function draw(n){
+  for(let i=0;i<n;i++){
+    refillDrawIfNeeded();
+    if(state.draw.length===0){
+      // fatigue
+      logBad("Bộ bài cạn! Bạn chịu Fatigue 2.");
+      applyDamage(state.player, 2);
+      continue;
+    }
+    const id = state.draw.pop();
+    state.hand.push(id);
+  }
+}
+function addCardToDiscard(cardId){ state.discard.push(cardId); }
+function addCardToDeck(cardId){ state.deck.push(cardId); }
+
+/* ------------------- Card play context ------------------ */
+function makeCtx(){
+  return {
+    rng: () => state.rng(),
+    axis: state.axis,
+    player: state.player,
+    enemy: state.enemy,
+    hand: state.hand,
+
+    mana: state.mana,
+    maxMana: state.maxMana,
+
+    logGood, logBad, logSys,
+
+    // actions
+    dealEnemy(amount){
+      // Titan gravity amplifies attacks; curse reduces? We'll apply gravity as +damage.
+      const grav = state.player.gravity || 0;
+      const bonus = Math.floor(grav/2); // modest scaling
+      const dealt = applyDamage(state.enemy, amount + bonus);
+      logGood(`Gây ${dealt} sát thương lên địch${bonus?` (Trọng Lực +${bonus})`:``}.`);
+    },
+    enemyTakeDirect(amount){
+      const dealt = applyDamage(state.enemy, amount);
+      logGood(`Relic gây ${dealt} sát thương trực tiếp.`);
+    },
+    healPlayer(amount){
+      amount = Math.max(0, Math.floor(amount));
+      const before = state.player.hp;
+      state.player.hp = Math.min(state.player.maxHP, state.player.hp + amount);
+      const got = state.player.hp - before;
+      logGood(`Hồi ${got} HP.`);
+    },
+    addStatus(entity, name, v, d){
+      addStatus(entity, name, v, d);
+    },
+    removeStatus(entity, name, v){
+      removeStatus(entity, name, v);
+    },
+    getStatus(entity, name){
+      return getStatus(entity, name);
+    },
+    addGravity(v){
+      state.player.gravity = clamp((state.player.gravity||0)+v, 0, 20);
+      logSys(`Trọng Lực +${v} (hiện: ${state.player.gravity}).`);
+    },
+    addRift(v){
+      state.player.rift = clamp((state.player.rift||0)+v, 0, 20);
+      logSys(`Đứt Mạch +${v} (hiện: ${state.player.rift}).`);
+    },
+    gainFate(v, why){
+      state.fate = clamp(state.fate + v, 0, 99);
+      logGood(`Fate +${v}${why?` (${why})`:``}.`);
+    },
+    draw(n){ draw(n); },
+    scry(n){
+      refillDrawIfNeeded();
+      const peek = state.draw.slice(Math.max(0, state.draw.length-n));
+      if(peek.length===0){ logSys("Scry: bộ rút trống."); return; }
+      const names = peek.map(id => getCardById(id).name).join(" · ");
+      logSys(`Scry ${peek.length}: ${names}`);
+      // Simple scry: remove any with rng 50% if player wants? We'll do a quick prompt-ish without blocking:
+      // We'll implement lightweight: auto-discard any token wisp/seed none; else keep.
+      // More interactive scry would be heavy; keep deterministic: if Entropy>60 discard 1 random from peek.
+      if(state.axis.E>60 && peek.length>0){
+        const pickIndex = Math.floor(state.rng()*peek.length);
+        const id = peek[pickIndex];
+        // remove that id from draw (from end slice)
+        const realIndex = state.draw.lastIndexOf(id);
+        if(realIndex>=0){
+          state.draw.splice(realIndex,1);
+          state.discard.push(id);
+          logSys("Entropy cao: Scry bỏ 1 lá xuống bỏ bài.");
+        }
+      }
+    },
+    requestDiscard(n, after){
+      // simple: discard random n from hand (to avoid complex UI)
+      if(state.hand.length===0){ logSys("Không có lá để bỏ."); after && after(); return; }
+      for(let i=0;i<n;i++){
+        if(state.hand.length===0) break;
+        const idx = Math.floor(state.rng()*state.hand.length);
+        const id = state.hand.splice(idx,1)[0];
+        state.discard.push(id);
+        logSys(`Bỏ: ${getCardById(id).name}`);
+      }
+      after && after();
+    },
+    recallFromDiscard(){
+      if(state.discard.length===0){ logSys("Bỏ bài trống."); return; }
+      const idx = Math.floor(state.rng()*state.discard.length);
+      const id = state.discard.splice(idx,1)[0];
+      state.hand.push(id);
+      logGood(`Hồi lại từ bỏ bài: ${getCardById(id).name}`);
+    },
+    cleansePlayer(n){
+      const bad = ["Burn","Freeze","Stun","Curse"];
+      for(let i=0;i<n;i++){
+        const present = bad.filter(s => getStatus(state.player,s)>0);
+        if(present.length===0){ logSys("Không có hiệu ứng xấu để xóa."); return; }
+        const pick = present[Math.floor(state.rng()*present.length)];
+        delete state.player.statuses[pick];
+        logGood(`Tẩy: xóa ${pick}.`);
+      }
+    },
+    // special: token exhaust
+    exhausting:false
+  };
+}
+
+/* ------------------- Axis & Events ---------------------- */
+function applyAxisDelta(delta){
+  state.axis.E = clamp(state.axis.E + (delta.E||0), 0, 100);
+  state.axis.G = clamp(state.axis.G + (delta.G||0), 0, 100);
+  state.axis.T = clamp(state.axis.T + (delta.T||0), 0, 100);
+}
+
+function checkAxisEvents(){
+  // Only one event per card use; priority: the one most above threshold
+  const over = [
+    {kind:"ENTROPY", val: state.axis.E},
+    {kind:"GAIA", val: state.axis.G},
+    {kind:"TARTARUS", val: state.axis.T},
+  ].filter(x => x.val>70);
+
+  if(over.length===0) return;
+
+  over.sort((a,b)=>b.val-a.val);
+  const kind = over[0].kind;
+
+  state.eventJustTriggered = true;
+  const payload = triggerEvent(kind);
+
+  state.lastEvent = {kind, payload};
+  // relic hook
+  for(const rid of state.relics){
+    const r = RELICS.find(x=>x.id===rid);
+    if(r?.onEvent) r.onEvent(makeCtx(), kind);
+  }
+
+  renderAll();
+  showEventOverlay(kind, payload);
+}
+
+function triggerEvent(kind){
+  // Reduce the triggered axis to prevent chaining too hard
+  if(kind==="ENTROPY"){
+    // Chaos surge: randomize costs in hand for this turn; shuffle hand; optionally twist one card's axis
+    const costMap = {};
+    for(const id of state.hand){
+      costMap[id] = 1 + Math.floor(state.rng()*3); // 1..3
+    }
+    state.player.flags.tempCostMap = costMap;
+    shuffleInPlace(state.hand);
+    let twist = null;
+    if(state.hand.length>0 && state.rng()<0.5){
+      twist = state.hand[Math.floor(state.rng()*state.hand.length)];
+      state.player.flags.twistedCard = twist;
+    }
+    state.axis.E = clamp(state.axis.E - 40, 0, 100);
+    return {costMap, twist};
+  }
+  if(kind==="GAIA"){
+    // Life bloom: heal, add tokens, duplicate a random non-token from discard
+    const heal = 6 + Math.floor(state.rng()*3); // 6..8
+    state.player.hp = Math.min(state.player.maxHP, state.player.hp + heal);
+    addCardToDiscard("TOK_SEED");
+    addCardToDiscard("TOK_SEED");
+    let dup = null;
+    const cand = state.discard.filter(id => !id.startsWith("TOK_"));
+    if(cand.length>0){
+      dup = cand[Math.floor(state.rng()*cand.length)];
+      addCardToDiscard(dup);
+    }
+    state.axis.G = clamp(state.axis.G - 40, 0, 100);
+    return {heal, dup};
+  }
+  // TARTARUS
+  // Abyss chains: add curse to player, lock 1 hand slot for 2 turns, add wisp
+  addStatus(state.player,"Curse",1,3);
+  state.player.flags.lockedSlots = state.player.flags.lockedSlots || 0;
+  state.player.flags.lockedSlots = Math.min(2, (state.player.flags.lockedSlots||0) + 1); // 1..2
+  addCardToDiscard("TOK_WISP");
+  state.axis.T = clamp(state.axis.T - 40, 0, 100);
+  return {locked: state.player.flags.lockedSlots};
+}
+
+function showEventOverlay(kind, payload){
+  const title = $("#eventTitle");
+  const desc = $("#eventDesc");
+  const mini = $("#eventMini");
+
+  if(kind==="ENTROPY"){
+    title.textContent = "Biến Cố: Hỗn Mang (Entropy)";
+    desc.textContent = "Quy tắc bị xáo trộn: cost trên tay bị ngẫu nhiên hóa (1–3), tay bài bị đảo trộn. Đôi khi một lá bị 'bẻ trục' (hiệu ứng lệch).";
+    mini.textContent = payload.twist
+      ? `Lá bị bẻ trục: ${getCardById(payload.twist).name}. Bạn có thể dùng Fate để Reroll.`
+      : "Bạn có thể dùng Fate để Reroll (nếu muốn đổi biến cố).";
+  } else if(kind==="GAIA"){
+    title.textContent = "Biến Cố: Sinh Trưởng (Gaia)";
+    desc.textContent = "Mầm sống trỗi dậy: bạn được hồi phục, tạo token 'Mầm' và đôi khi nhân bản 1 lá trong bỏ bài.";
+    mini.textContent = `Hồi: ${payload.heal}. ` + (payload.dup ? `Nhân bản: ${getCardById(payload.dup).name}.` : "Không có lá để nhân bản.");
+  } else {
+    title.textContent = "Biến Cố: Vực Sâu (Tartarus)";
+    desc.textContent = "Xiềng xích đổ xuống: bạn bị nguyền (Curse), một phần tay bài bị khóa tạm thời, và sinh ra token 'U Linh Nguyền'.";
+    mini.textContent = `Số slot bị khóa (tạm): ${payload.locked}.`;
+  }
+
+  $("#overlay").classList.add("active");
+}
+
+/* ------------------- Play a card ------------------------ */
+function effectiveCost(card){
+  // Base cost possibly overridden by entropy event tempCostMap, plus curse, minus warp
+  let cost = card.cost;
+
+  // Entropy temp random cost for this turn:
+  const map = state.player.flags.tempCostMap;
+  if(map && map[card.id]!=null) cost = map[card.id];
+
+  // Curse on player increases cost by 1
+  if(getStatus(state.player,"Curse")>0) cost += 1;
+
+  // Warp: if rift + nextCardWarp => maybe free or double
+  if(state.player.flags.nextCardWarp && !state.player.flags.warpUsedThisTurn){
+    // 50% free else double effect marker
+    const roll = state.rng();
+    if(roll<0.5){
+      cost = 0;
+      state.player.flags.warpFree = true;
+    } else {
+      state.player.flags.warpDouble = true;
+    }
+  }
+
+  // Clamp
+  return clamp(cost, 0, 9);
+}
+
+function canPlayCard(card){
+  const cost = effectiveCost(card);
+  return state.mana >= cost;
+}
+
+function animatePlayedCard(cardEl){
+  if(!cardEl) return;
+  const r = cardEl.getBoundingClientRect();
+  const clone = cardEl.cloneNode(true);
+  clone.classList.add("playAnim");
+  clone.style.left = (r.left + r.width/2) + "px";
+  clone.style.top = (r.top + r.height/2) + "px";
+  document.body.appendChild(clone);
+  requestAnimationFrame(()=>{
+    clone.style.opacity = "0";
+    clone.style.transform = "translate(-50%,-50%) scale(.84)";
+  });
+  setTimeout(()=> clone.remove(), 260);
+}
+
+function playCardFromHand(index, cardEl){
+  if(state.screen!=="battle") return;
+  if(index<0 || index>=state.hand.length) return;
+
+  // handle locked slots by Tartarus: we represent them by rendering placeholders, not actual array indices.
+  // So hand array contains real cards only; lockedSlots affects rendering and click mapping safely.
+
+  const id = state.hand[index];
+  const card = getCardById(id);
+
+  const cost = effectiveCost(card);
+  if(state.mana < cost){
+    logBad("Không đủ Mana.");
+    return;
+  }
+
+  // Consume mana
+  state.mana = clamp(state.mana - cost, 0, state.maxMana);
+
+  // Remove from hand
+  state.hand.splice(index,1);
+
+  // Axis delta apply, with special twist if entropy twisted card
+  let delta = {...card.axis};
+
+  // If entropy twist affects this card, invert one axis component
+  if(state.player.flags.twistedCard === card.id){
+    // invert the largest absolute axis component
+    const comps = [
+      {k:"E", v: Math.abs(delta.E||0)},
+      {k:"G", v: Math.abs(delta.G||0)},
+      {k:"T", v: Math.abs(delta.T||0)}
+    ].sort((a,b)=>b.v-a.v);
+    if(comps[0].v>0){
+      const k = comps[0].k;
+      delta[k] = -(delta[k]||0);
+      logSys(`Hỗn Mang bẻ trục: Axis của '${card.name}' bị đảo ở ${k}.`);
+    } else {
+      // if no axis delta, just add entropy
+      delta.E = (delta.E||0) + 3;
+    }
+  }
+
+  // Add fate if matches ancestry (tính cách thần)
+  if(card.group === state.ancestry && card.group !== GROUPS.NEUTRAL){
+    // once per turn limit: 2
+    state.player.flags.fateFromAncestry = state.player.flags.fateFromAncestry||0;
+    if(state.player.flags.fateFromAncestry<2){
+      state.fate = clamp(state.fate + 1, 0, 99);
+      state.player.flags.fateFromAncestry++;
+      logGood("Chơi đúng Tổ Hệ: Fate +1.");
+    }
+  }
+
+  // Olympia decree counter
+  if(card.group === GROUPS.OLYMPIAN) state.player.decreeCount = (state.player.decreeCount||0) + 1;
+
+  // Apply Axis changes
+  applyAxisDelta(delta);
+
+  // Execute effect with warp/double logic
+  const ctx = makeCtx();
+
+  // Resolve warp once, before effect
+  let warpFree = false;
+  let warpDouble = false;
+  if(state.player.flags.nextCardWarp && !state.player.flags.warpUsedThisTurn){
+    state.player.flags.warpUsedThisTurn = true;
+    warpFree = !!state.player.flags.warpFree;
+    warpDouble = !!state.player.flags.warpDouble;
+    // consume one rift stack
+    if(state.player.rift>0) state.player.rift -= 1;
+    // clear
+    state.player.flags.nextCardWarp = false;
+    state.player.flags.warpFree = false;
+    state.player.flags.warpDouble = false;
+
+    if(warpFree){
+      logSys("Đứt Mạch: lá này được miễn cost (đã áp dụng).");
+      // relic hook
+      for(const rid of state.relics){
+        const r = RELICS.find(x=>x.id===rid);
+        if(r?.onWarpFree) r.onWarpFree(ctx);
+      }
+    } else if(warpDouble){
+      logSys("Đứt Mạch: lá này nhân đôi hiệu ứng (không nhân đôi Axis).");
+    }
+  }
+
+  // Run effect
+  state.lastPlayedCardId = card.id;
+  state.player.cardsPlayedLastTurn += 1;
+
+  // Animation
+  animatePlayedCard(cardEl);
+
+  // Apply effect (possibly doubled)
+  ctx.exhausting = false;
+  card.play(ctx);
+  if(warpDouble){
+    const ctx2 = makeCtx();
+    ctx2.exhausting = false;
+    card.play(ctx2);
+  }
+
+  // Exhaust tokens
+  const shouldExhaust = card.id.startsWith("TOK_") || ctx.exhausting;
+  if(shouldExhaust){
+    state.exhaust.push(card.id);
+    logSys(`Exhaust: ${card.name}`);
+  } else {
+    state.discard.push(card.id);
+  }
+
+  // Titan gravity decay is per turn, not per card.
+
+  // Check Decree (Olympian combo)
+  if(state.player.decreeCount>=3){
+    triggerDecree();
+    state.player.decreeCount = 0;
+  }
+
+  // Check Axis event immediately after card resolves
+  checkAxisEvents();
+
+  // win/lose checks
+  if(state.enemy.hp<=0){
+    onWinBattle();
+    return;
+  }
+  if(state.player.hp<=0){
+    onLoseRun();
+    return;
+  }
+
+  renderAll();
+}
+
+function triggerDecree(){
+  // Decree: +2 fate and deal 5
+  state.fate = clamp(state.fate + 2, 0, 99);
+  logSys("Sắc Lệnh hoàn tất: Fate +2, gây 5 sát thương.");
+  applyDamage(state.enemy, 5);
+
+  // relic hook
+  for(const rid of state.relics){
+    const r = RELICS.find(x=>x.id===rid);
+    if(r?.onDecree) r.onDecree(makeCtx());
+  }
+}
+
+/* ------------------- Enemy turn ------------------------- */
+function enemyIntent(){
+  const e = state.enemy;
+  const step = e.aiIndex % e.pattern.length;
+  return e.pattern[step];
+}
+function renderIntent(){
+  const intent = enemyIntent();
+  $("#intentText").textContent = intent.text + (state.enemySkipThisTurn ? " (bị Negate)" : "");
+}
+
+function enemyAct(){
+  if(state.enemy.hp<=0) return;
+  const e = state.enemy;
+  const intent = enemyIntent();
+  e.aiIndex = (e.aiIndex + 1) % e.pattern.length;
+
+  if(state.enemySkipThisTurn){
+    logSys("Fate: Negate — hành động địch bị hủy!");
+    state.enemySkipThisTurn = false;
+    return;
+  }
+
+  // If enemy stunned
+  if(getStatus(e,"Stun")>0){
+    logSys("Địch bị Stun — bỏ lượt.");
+    removeStatus(e,"Stun", 999);
+    return;
+  }
+
+  // Damage modifiers from Hera-like law
+  let atkDown = e.flags.atkDown || 0;
+  e.flags.atkDown = 0;
+
+  const doAttack = (amt)=>{
+    const a = Math.max(0, amt - atkDown);
+    const dealt = applyDamage(state.player, a);
+    logBad(`Địch gây ${dealt} sát thương${atkDown?` (bị giảm ${atkDown})`:``}.`);
+  };
+
+  switch(intent.type){
+    case "attack":
+      doAttack(intent.amount);
+      break;
+    case "attackBurn":
+      doAttack(intent.amount);
+      addStatus(state.player,"Burn", intent.burn||2, 2);
+      logBad("Bạn bị Burn.");
+      break;
+    case "attackStun":
+      doAttack(intent.amount);
+      addStatus(state.player,"Stun", 1, intent.dur||1);
+      logBad("Bạn bị Stun.");
+      break;
+    case "defend":
+      addStatus(e,"Shield", intent.amount, 1);
+      logSys(`Địch nhận Khiên ${intent.amount}.`);
+      break;
+    case "heal":
+      e.hp = Math.min(e.maxHP, e.hp + intent.amount);
+      logSys(`Địch hồi ${intent.amount} HP.`);
+      break;
+    case "freeze":
+      addStatus(state.player,"Freeze", intent.amount||1, intent.dur||2);
+      logBad("Bạn bị Freeze.");
+      break;
+    case "stun":
+      addStatus(state.player,"Stun", 1, intent.dur||1);
+      logBad("Bạn bị Stun.");
+      break;
+    case "curse":
+      addStatus(state.player,"Curse", intent.amount||1, intent.dur||3);
+      logBad("Bạn bị Curse.");
+      break;
+    case "shuffleAxis":
+      // Entropy style hit
+      state.axis.E = clamp(state.axis.E + 8, 0, 100);
+      if(state.hand.length>0){
+        shuffleInPlace(state.hand);
+        logBad("Địch xáo tay bài của bạn!");
+      }
+      logBad("Địch làm Entropy tăng.");
+      checkAxisEvents();
+      break;
+    case "lawPunish":
+      // Punish if player played many cards last turn
+      if(state.player.cardsPlayedLastTurn>=3){
+        const dealt = applyDamage(state.player, 3);
+        logBad(`Luật Zeus trừng phạt: bạn nhận ${dealt} sát thương.`);
+      } else {
+        logSys("Luật Zeus: không trừng phạt (bạn đánh ít lá lượt trước).");
+      }
+      break;
+    default:
+      logSys("Địch do dự...");
+  }
+}
+
+/* ------------------- Turn cycle ------------------------- */
+function startBattleTurn(){
+  resetFlagsForTurn();
+
+  // Remove temporary cost map from last entropy event at start of new turn
+  state.player.flags.tempCostMap = null;
+  state.player.flags.twistedCard = null;
+
+  // decrement locked slots from Tartarus event
+  if(state.player.flags.lockedSlots){
+    state.player.flags.lockedSlots = Math.max(0, state.player.flags.lockedSlots - 1);
+  }
+
+  // Status start-of-turn effects
+  // Burn: take burn damage equal to v
+  if(getStatus(state.player,"Burn")>0){
+    const b = getStatus(state.player,"Burn");
+    const dealt = applyDamage(state.player, b);
+    logBad(`Burn thiêu đốt: bạn nhận ${dealt} sát thương.`);
+  }
+  // Freeze: reduce mana by v at start
+  // Stun: no direct effect here; handled by end-turn / play?
+  // Curse: no direct effect; increases cost.
+
+  // Relic hook
+  for(const rid of state.relics){
+    const r = RELICS.find(x=>x.id===rid);
+    if(r?.onTurnStart) r.onTurnStart(makeCtx());
+  }
+
+  // Mana each turn: baseMana + chapter bonus - Freeze
+  const freeze = getStatus(state.player,"Freeze");
+  const chapterBonus = (state.run.chapter-1); // 0..2
+  let mana = state.baseMana + chapterBonus;
+  mana = clamp(mana - freeze, 0, state.maxMana);
+  state.mana = mana;
+
+  // draw to 5, but if lockedSlots reduce effective hand size display; still draw real cards.
+  draw(5);
+
+  state.player.cardsPlayedLastTurn = 0;
+
+  renderAll();
+
+  // If player is stunned, auto end-turn
+  if(getStatus(state.player,"Stun")>0){
+    logBad("Bạn bị Stun — bỏ lượt của bạn.");
+    delete state.player.statuses["Stun"];
+    endTurn();
+  }
+}
+
+function endTurn(){
+  // Discard hand (except none)
+  while(state.hand.length>0){
+    state.discard.push(state.hand.pop());
+  }
+
+  // Relic hook
+  for(const rid of state.relics){
+    const r = RELICS.find(x=>x.id===rid);
+    if(r?.onTurnEnd) r.onTurnEnd(makeCtx());
+  }
+
+  // Enemy start-of-turn statuses
+  if(getStatus(state.enemy,"Burn")>0){
+    const b = getStatus(state.enemy,"Burn");
+    const dealt = applyDamage(state.enemy, b);
+    logGood(`Burn trên địch: gây ${dealt} sát thương.`);
+  }
+
+  // Enemy acts
+  renderAll();
+  enemyAct();
+
+  // Decay durations
+  decayStatuses(state.player);
+  decayStatuses(state.enemy);
+
+  // Gravity decays
+  if(state.player.gravity>0){
+    state.player.gravity = Math.max(0, state.player.gravity - 1);
+  }
+
+  // Lose check
+  if(state.player.hp<=0){ onLoseRun(); return; }
+  // Win check
+  if(state.enemy.hp<=0){ onWinBattle(); return; }
+
+  // Next player turn
+  startBattleTurn();
+}
+
+/* ------------------- Battle setup ----------------------- */
+function pickEnemyForChapter(ch){
+  if(ch===1) return JSON.parse(JSON.stringify(seededPick(ENEMIES.PRIMORDIAL)));
+  if(ch===2) return JSON.parse(JSON.stringify(seededPick(ENEMIES.TITAN)));
+  return JSON.parse(JSON.stringify(seededPick(ENEMIES.OLYMPIAN)));
+}
+
+function startBattle(){
+  // prepare deck zones
+  state.draw = shuffleInPlace(state.deck.slice());
+  state.discard = [];
+  state.hand = [];
+  state.exhaust = [];
+
+  // pick enemy
+  state.enemy = pickEnemyForChapter(state.run.chapter);
+  state.enemy.hp = state.enemy.maxHP;
+  state.enemy.statuses = {};
+  state.enemy.flags = {};
+  state.enemy.aiIndex = 0;
+
+  logSys(`Bắt đầu trận: ${state.enemy.name} (Chương ${state.run.chapter}: ${chapterName(state.run.chapter)}).`);
+
+  showScreen("battle");
+  startBattleTurn();
+  renderAll();
+}
+
+/* ------------------- Win / Reward ----------------------- */
+function onWinBattle(){
+  logGood(`Thắng trận trước ${state.enemy.name}!`);
+
+  // chance relic
+  let gainedRelic = null;
+  if(state.rng()<0.35 && state.relics.length<3){
+    const candidates = RELICS.filter(r => !state.relics.includes(r.id));
+    if(candidates.length>0){
+      gainedRelic = seededPick(candidates);
+      state.relics.push(gainedRelic.id);
+      logSys(`Nhận Relic: ${gainedRelic.name}.`);
+    }
+  }
+
+  // Build reward choices: 3 cards from pool, favor chapter group
+  const pool = REWARD_POOL.filter(c => {
+    if(state.run.chapter===1) return c.group!==GROUPS.OLYMPIAN || state.rng()<0.45;
+    if(state.run.chapter===2) return true;
+    return true;
+  });
+
+  const preferredGroup = (state.run.chapter===1) ? GROUPS.PRIMORDIAL : (state.run.chapter===2 ? GROUPS.TITAN : GROUPS.OLYMPIAN);
+
+  // Weighted pick helper
+  function weightedCardPick(){
+    for(let k=0;k<30;k++){
+      const c = pool[Math.floor(state.rng()*pool.length)];
+      const w = (c.group===preferredGroup) ? 0.62 : 0.38;
+      if(state.rng()<w) return c;
+    }
+    return seededPick(pool);
+  }
+
+  const picks = [];
+  while(picks.length<3){
+    const c = weightedCardPick();
+    if(!picks.some(x=>x.id===c.id) && !c.id.startsWith("TOK_")) picks.push(c);
+  }
+
+  state.reward = {
+    cards: picks.map(c=>c.id),
+    relic: gainedRelic ? gainedRelic.id : null
+  };
+
+  // advance match progress (after choosing reward)
+  showRewardScreen();
+}
+
+function showRewardScreen(){
+  showScreen("reward");
+  $("#rewardChoices").innerHTML = "";
+  $("#rewardIntro").textContent = "Chọn 1 trong 3 lá bài để thêm vào deck.";
+  const info = [];
+  if(state.reward?.relic){
+    const r = RELICS.find(x=>x.id===state.reward.relic);
+    info.push(`Bạn vừa nhận Relic: ${r.name} — ${r.desc}`);
+  } else {
+    info.push("Không có Relic lần này.");
+  }
+  $("#postRewardInfo").textContent = info.join(" ");
+
+  for(const id of state.reward.cards){
+    const card = getCardById(id);
+    const el = renderCardEl(card, {clickable:true, inReward:true});
+    el.addEventListener("click", () => {
+      addCardToDeck(id);
+      logSys(`Thêm vào deck: ${card.name}.`);
+      autoSave();
+      $("#rewardIntro").textContent = `Đã chọn: ${card.name}.`;
+      // disable remaining
+      [...$("#rewardChoices").children].forEach(ch => ch.classList.add("disabled"));
+      // enable next
+      $("#btnNextBattle").disabled = false;
+    });
+    $("#rewardChoices").appendChild(el);
+  }
+  $("#btnNextBattle").disabled = true;
+  renderAll();
+}
+
+/* Upgrade random (simple) */
+function tryUpgradeRandom(){
+  if(state.deck.length===0) return null;
+  // pick a non-token; tokens not in deck anyway
+  const idx = Math.floor(state.rng()*state.deck.length);
+  const id = state.deck[idx];
+  const c = getCardById(id);
+
+  // Upgrade effect: create an upgraded copy by adding suffix and bumping numbers in a simple way.
+  // We store upgrades as special id with "_UP" and resolve to base with modifiers.
+  if(id.endsWith("_UP")){ logSys("Lá được chọn đã nâng cấp."); return null; }
+  const upId = id + "_UP";
+  // If already exists in CARDS? We'll virtualize: store in deck and resolve on play/render.
+  state.deck[idx] = upId;
+  logGood(`Nâng cấp: ${c.name} → ${c.name}+`);
+  return upId;
+}
+
+function resolveCardIdMaybeUp(id){
+  if(!id.endsWith("_UP")) return {card:getCardById(id), up:false};
+  const base = id.slice(0, -3);
+  const card = getCardById(base);
+  return {card, up:true};
+}
+
+/* ------------------- Lose ------------------------------- */
+function onLoseRun(){
+  state.run.alive = false;
+  logBad("Bạn gục ngã. Run kết thúc.");
+  alert("Bạn đã thua. Nhấn Start để bắt đầu run mới.");
+  showScreen("start");
+}
+
+/* ------------------- Rendering -------------------------- */
+function renderAll(){
+  if(state.screen==="battle") renderBattleUI();
+  if(state.screen==="reward") renderRewardUI();
+  // start screen needs no dynamic rendering besides.
+}
+
+function renderAxis(){
+  const wrap = $("#axisWrap");
+  wrap.innerHTML = "";
+  const items = [
+    {k:"E", name:"Entropy (Hỗn Mang)", color:"var(--E)", val: state.axis.E},
+    {k:"G", name:"Gaia (Sinh Trưởng)", color:"var(--G)", val: state.axis.G},
+    {k:"T", name:"Tartarus (Vực Sâu)", color:"var(--T)", val: state.axis.T},
+  ];
+  for(const it of items){
+    const div = document.createElement("div");
+    div.className = "axisBar";
+    div.innerHTML = `
+      <div class="axisHead"><b>${it.name}</b><span>${it.val}/100</span></div>
+      <div class="bar">
+        <span class="thresh"></span>
+        <i style="width:${it.val}%; background:${it.color};"></i>
+      </div>
+    `;
+    wrap.appendChild(div);
+  }
+}
+
+function renderStatuses(entity, el){
+  el.innerHTML = "";
+  const order = ["Shield","Burn","Freeze","Stun","Curse"];
+  for(const k of order){
+    const st = entity.statuses[k];
+    if(!st) continue;
+    const b = document.createElement("span");
+    const cls = k==="Burn"?"bBurn":k==="Freeze"?"bFreeze":k==="Stun"?"bStun":k==="Shield"?"bShield":"bCurse";
+    b.className = `badge ${cls}`;
+    b.innerHTML = `<i></i> ${k}${k==="Shield" ? ` +${st.v}` : ` ${st.v}`} <span class="muted">(${st.d})</span>`;
+    el.appendChild(b);
+  }
+}
+
+function renderHP(){
+  $("#pHPText").textContent = `${state.player.hp}/${state.player.maxHP}`;
+  $("#eHPText").textContent = `${state.enemy.hp}/${state.enemy.maxHP}`;
+  $("#pHPBar").style.width = (100*state.player.hp/state.player.maxHP) + "%";
+  $("#eHPBar").style.width = (100*state.enemy.hp/state.enemy.maxHP) + "%";
+}
+
+function renderCounts(){
+  $("#handCount").textContent = String(state.hand.length);
+  $("#drawCount").textContent = String(state.draw.length);
+  $("#discardCount").textContent = String(state.discard.length);
+}
+
+function renderResources(){
+  $("#manaText").textContent = `${state.mana}/${state.maxMana}`;
+  $("#fateText").textContent = `${state.fate}`;
+  $("#gravityText").textContent = `${state.player.gravity||0}`;
+  $("#riftText").textContent = `${state.player.rift||0}`;
+  $("#decreeText").textContent = `${state.player.decreeCount||0}/3`;
+
+  // intervention buttons
+  $("#btnReroll").disabled = !(state.eventJustTriggered && state.lastEvent && state.lastEvent.kind==="ENTROPY" && state.fate>=2);
+  $("#btnNegate").disabled = !(state.fate>=3);
+  $("#btnCopy").disabled = !(state.fate>=2 && !!state.lastPlayedCardId);
+  $("#btnDraw1").disabled = !(state.fate>=1);
+}
+
+function renderRelics(){
+  const el = $("#relicList");
+  if(state.relics.length===0){
+    el.innerHTML = `<span class="muted">Chưa có relic.</span>`;
+    return;
+  }
+  const lines = state.relics.map(id=>{
+    const r = RELICS.find(x=>x.id===id);
+    return `<div><b>${escapeHtml(r.name)}</b><div class="muted" style="font-size:11px;margin-top:2px;">${escapeHtml(r.desc)}</div></div>`;
+  }).join(`<div class="spacer"></div>`);
+  el.innerHTML = lines;
+}
+
+function renderLog(){
+  const el = $("#log");
+  el.innerHTML = state.logLines.join("<br/>");
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderBattleMeta(){
+  $("#chapterText").textContent = `${state.run.chapter} — ${chapterName(state.run.chapter)}`;
+  $("#matchText").textContent = `${state.run.matchIndex+1}/${state.run.matchesInChapter}`;
+  $("#pName").textContent = `${state.player.name} (${groupLabel(state.ancestry)})`;
+  $("#eName").textContent = state.enemy.name;
+}
+
+function groupLabel(g){
+  if(g===GROUPS.PRIMORDIAL) return "Nguyên sơ";
+  if(g===GROUPS.TITAN) return "Titan";
+  if(g===GROUPS.OLYMPIAN) return "Olympia";
+  return "Trung lập";
+}
+
+function renderCardEl(card, opts){
+  const {up, resolved} = (() => {
+    // if opts provides id with _UP, it has been resolved earlier
+    return {up: !!opts?.up, resolved: card};
+  })();
+
+  const frameClass =
+    card.group===GROUPS.PRIMORDIAL ? "frame-PRIMORDIAL" :
+    card.group===GROUPS.TITAN ? "frame-TITAN" :
+    card.group===GROUPS.OLYMPIAN ? "frame-OLYMPIAN" :
+    "frame-NEUTRAL";
+
+  const div = document.createElement("div");
+  div.className = `card ${frameClass}`;
+
+  // displayed cost in battle can be temporary; in reward show base
+  let displayCost = card.cost;
+  if(state.screen==="battle"){
+    // apply temp cost map and curse
+    displayCost = effectiveCost(card);
+  }
+
+  // add + marker
+  const nameShow = up ? (card.name + "+") : card.name;
+
+  div.innerHTML = `
+    <div class="cTop">
+      <div>
+        <div class="cName">${escapeHtml(nameShow)}</div>
+        <div class="cGroup">${escapeHtml(groupLabel(card.group))}</div>
+      </div>
+      <div class="cCost">${displayCost}</div>
+    </div>
+    <div class="cBody">
+      <div class="art ${escapeHtml(card.art||"scroll")}"></div>
+      <div class="cDesc">${escapeHtml(card.text)}</div>
+      <div class="cTags">
+        ${(card.tags||[]).slice(0,4).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join("")}
+        ${axisTagMini(card.axis)}
+      </div>
+    </div>
+  `;
+
+  // Tooltip hooks
+  div.addEventListener("mousemove", (ev)=> showTooltip(ev, card, {up}));
+  div.addEventListener("mouseleave", hideTooltip);
+
+  return div;
+}
+
+function axisTagMini(axis){
+  const parts = [];
+  const E = axis.E||0, G = axis.G||0, T = axis.T||0;
+  if(E!==0) parts.push(`<span class="tag tE">E ${E>0?`+${E}`:E}</span>`);
+  if(G!==0) parts.push(`<span class="tag tG">G ${G>0?`+${G}`:G}</span>`);
+  if(T!==0) parts.push(`<span class="tag tT">T ${T>0?`+${T}`:T}</span>`);
+  return parts.join("");
+}
+
+function showTooltip(ev, card, opt){
+  // Display full description + axis delta + real cost
+  const up = !!opt?.up;
+  const cost = (state.screen==="battle") ? effectiveCost(card) : card.cost;
+  const d = card.axis || {E:0,G:0,T:0};
+  tooltip.style.display = "block";
+  tooltip.style.left = ev.clientX + "px";
+  tooltip.style.top = ev.clientY + "px";
+
+  const group = groupLabel(card.group);
+  tooltip.innerHTML = `
+    <b>${escapeHtml(up ? card.name+"+" : card.name)} <span class="muted" style="font-weight:800;">(Cost ${cost})</span></b>
+    <div class="sm">${escapeHtml(group)} · Tag: ${(card.tags||[]).slice(0,6).map(escapeHtml).join(", ")}</div>
+    <div class="sm" style="margin-top:6px;">${escapeHtml(card.text)}</div>
+    <div class="deltaLine">
+      <span class="delta dE"><i></i> Entropy ${fmtSigned(d.E||0)}</span>
+      <span class="delta dG"><i></i> Gaia ${fmtSigned(d.G||0)}</span>
+      <span class="delta dT"><i></i> Tartarus ${fmtSigned(d.T||0)}</span>
+    </div>
+  `;
+}
+function hideTooltip(){ tooltip.style.display = "none"; }
+function fmtSigned(n){ return n>0?`+${n}`:`${n}`; }
+
+function renderHand(){
+  const el = $("#hand");
+  el.innerHTML = "";
+
+  // render locked slots placeholders
+  const locked = state.player.flags.lockedSlots || 0;
+  for(let i=0;i<locked;i++){
+    const ph = document.createElement("div");
+    ph.className = "card frame-NEUTRAL disabled";
+    ph.style.opacity = ".35";
+    ph.style.cursor = "not-allowed";
+    ph.innerHTML = `
+      <div class="cTop">
+        <div>
+          <div class="cName">Xiềng Xích</div>
+          <div class="cGroup">Tartarus</div>
+        </div>
+        <div class="cCost">—</div>
+      </div>
+      <div class="cBody">
+        <div class="art abyss"></div>
+        <div class="cDesc">Một slot bị khóa tạm thời bởi Biến Cố Vực Sâu.</div>
+        <div class="cTags"><span class="tag tT">Khóa</span></div>
+      </div>
+    `;
+    el.appendChild(ph);
+  }
+
+  state.hand.forEach((id, idx)=>{
+    const {card, up} = resolveCardIdMaybeUp(id);
+    const cardEl = renderCardEl(card, {up, clickable:true});
+    // disabled if can't play
+    if(!canPlayCard(card)) cardEl.classList.add("disabled");
+    cardEl.addEventListener("click", ()=> {
+      if(!canPlayCard(card)) return;
+      // find current index in hand; safe to use idx here (same render cycle)
+      playCardFromHand(idx, cardEl);
+    });
+    el.appendChild(cardEl);
+  });
+}
+
+function renderBattleUI(){
+  renderAxis();
+  renderHP();
+  renderStatuses(state.player, $("#pStatus"));
+  renderStatuses(state.enemy, $("#eStatus"));
+  renderResources();
+  renderCounts();
+  renderIntent();
+  renderBattleMeta();
+  renderHand();
+  renderRelics();
+}
+
+function renderRewardUI(){
+  // choices already built
+  // update meta text
+  $("#postRewardInfo").textContent = $("#postRewardInfo").textContent;
+}
+
+/* ------------------- Save / Load ------------------------ */
+function serializableState(){
+  // Keep it compact; do not store full enemy object pattern? We can store enemy id & ai index & hp & statuses.
+  return {
+    seed: state.seed,
+    ancestry: state.ancestry,
+    run: state.run,
+    axis: state.axis,
+    player: {
+      hp: state.player.hp,
+      maxHP: state.player.maxHP,
+      statuses: state.player.statuses,
+      gravity: state.player.gravity,
+      rift: state.player.rift,
+      decreeCount: state.player.decreeCount
+    },
+    deck: state.deck,
+    fate: state.fate,
+    relics: state.relics
+  };
+}
+
+function saveGame(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(serializableState()));
+    alert("Đã lưu run vào localStorage.");
+  }catch(e){
+    alert("Không thể lưu: " + e.message);
+  }
+}
+function autoSave(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(serializableState())); }catch(e){}
+}
+
+function loadGame(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw){ alert("Chưa có save."); return; }
+    const s = JSON.parse(raw);
+
+    // restore basics
+    state.seed = s.seed|0;
+    state.rng = mulberry32(state.seed);
+
+    state.ancestry = s.ancestry;
+    state.run = s.run;
+    state.axis = s.axis;
+
+    state.player.hp = s.player.hp;
+    state.player.maxHP = s.player.maxHP;
+    state.player.statuses = s.player.statuses || {};
+    state.player.gravity = s.player.gravity || 0;
+    state.player.rift = s.player.rift || 0;
+    state.player.decreeCount = s.player.decreeCount || 0;
+
+    state.deck = s.deck || [];
+    state.fate = s.fate || 0;
+    state.relics = s.relics || [];
+
+    // reset zones and start a new battle at current chapter
+    state.logLines = [];
+    logSys("Đã tải save. Bắt đầu trận tiếp theo theo tiến độ.");
+    startBattle();
+  }catch(e){
+    alert("Không thể tải: " + e.message);
+  }
+}
+
+/* ------------------- Rewards → next battle -------------- */
+function goNextAfterReward(){
+  // update progress
+  state.run.matchIndex += 1;
+
+  // chapter transition
+  if(state.run.matchIndex >= state.run.matchesInChapter){
+    state.run.chapter += 1;
+    state.run.matchIndex = 0;
+    state.run.matchesInChapter = rollMatchesInChapter();
+    logSys(`Chuyển chương: ${state.run.chapter} — ${chapterName(state.run.chapter)}.`);
+    // heal a bit on chapter change
+    state.player.hp = Math.min(state.player.maxHP, state.player.hp + 10);
+    logGood("Nghỉ giữa chương: hồi 10 HP.");
+    // small axis stabilization
+    state.axis.E = clamp(state.axis.E - 10, 0, 100);
+    state.axis.T = clamp(state.axis.T - 8, 0, 100);
+    state.axis.G = clamp(state.axis.G + 6, 0, 100);
+  }
+
+  if(state.run.chapter>3){
+    alert("Chúc mừng! Bạn đã vượt qua cả 3 chương của Axis of Cosmos!");
+    showScreen("start");
+    return;
+  }
+
+  startBattle();
+}
+
+/* ------------------- Fate interventions ----------------- */
+function doRerollEvent(){
+  if(!(state.eventJustTriggered && state.lastEvent && state.lastEvent.kind==="ENTROPY")) return;
+  if(state.fate<2) return;
+  state.fate -= 2;
+
+  // Re-trigger entropy payload with new cost map / twist
+  const payload = triggerEvent("ENTROPY");
+  state.lastEvent = {kind:"ENTROPY", payload};
+  state.eventJustTriggered = true;
+
+  logSys("Fate: Reroll — biến cố Entropy bị đổi lại.");
+  renderAll();
+  showEventOverlay("ENTROPY", payload);
+}
+
+function doNegate(){
+  if(state.fate<3) return;
+  state.fate -= 3;
+  state.enemySkipThisTurn = true;
+  logSys("Fate: Negate — chuẩn bị hủy hành động địch.");
+  renderAll();
+}
+
+function doCopyLastCard(){
+  if(state.fate<2 || !state.lastPlayedCardId) return;
+  state.fate -= 2;
+  const id = state.lastPlayedCardId;
+  const {card, up} = resolveCardIdMaybeUp(id.endsWith("_UP") ? id : id); // lastPlayed stores base id in our flow
+  // Copy uses base card behavior; doesn't consume Mana, but still axis delta applies
+  logSys(`Fate: Copy — lặp lại ${card.name}.`);
+  applyAxisDelta(card.axis || {E:0,G:0,T:0});
+  const ctx = makeCtx();
+  card.play(ctx);
+
+  // copy doesn't move zones; no discard/exhaust changes
+  checkAxisEvents();
+
+  if(state.enemy.hp<=0){ onWinBattle(); return; }
+  if(state.player.hp<=0){ onLoseRun(); return; }
+
+  renderAll();
+}
+
+function doDraw1(){
+  if(state.fate<1) return;
+  state.fate -= 1;
+  draw(1);
+  logSys("Fate: rút 1.");
+  renderAll();
+}
+
+/* ------------------- UI wiring -------------------------- */
+$("#btnToStart").addEventListener("click", ()=> showScreen("start"));
+$("#btnSave").addEventListener("click", saveGame);
+$("#btnLoad").addEventListener("click", loadGame);
+
+$("#pickPrimordial").addEventListener("click", ()=> {
+  const seed = parseInt($("#seedInput").value||"20260102",10) || 20260102;
+  initNewRun(GROUPS.PRIMORDIAL, seed);
+  startBattle();
+});
+$("#pickTitan").addEventListener("click", ()=> {
+  const seed = parseInt($("#seedInput").value||"20260102",10) || 20260102;
+  initNewRun(GROUPS.TITAN, seed);
+  startBattle();
+});
+$("#pickOlympian").addEventListener("click", ()=> {
+  const seed = parseInt($("#seedInput").value||"20260102",10) || 20260102;
+  initNewRun(GROUPS.OLYMPIAN, seed);
+  startBattle();
+});
+
+$("#btnEndTurn").addEventListener("click", ()=> endTurn());
+$("#btnAbandon").addEventListener("click", ()=> {
+  if(confirm("Bỏ cuộc sẽ mất run hiện tại. Bạn chắc chứ?")){
+    localStorage.removeItem(LS_KEY);
+    showScreen("start");
+  }
+});
+
+$("#btnReroll").addEventListener("click", doRerollEvent);
+$("#btnNegate").addEventListener("click", doNegate);
+$("#btnCopy").addEventListener("click", doCopyLastCard);
+$("#btnDraw1").addEventListener("click", doDraw1);
+
+$("#eventClose").addEventListener("click", ()=> $("#overlay").classList.remove("active"));
+
+$("#btnNextBattle").addEventListener("click", ()=> goNextAfterReward());
+$("#btnUpgrade").addEventListener("click", ()=> {
+  const up = tryUpgradeRandom();
+  if(up){
+    autoSave();
+    $("#btnUpgrade").disabled = true;
+    $("#postRewardInfo").textContent = "Đã nâng cấp ngẫu nhiên 1 lá trong deck. (Lưu tự động)";
+  }
+});
+
+/* ------------------- Misc: tooltip follow --------------- */
+window.addEventListener("scroll", ()=> { if(tooltip.style.display==="block") tooltip.style.display="none"; }, {passive:true});
+
+/* ------------------- Extra: upgraded cards behavior ----- */
+/* We apply upgrades at play-time by modifying numeric effects in a generic way:
+   - Attack-only: +2 damage
+   - Shield-only: +2 shield
+   - Heal-only: +2 heal
+   - Mixed: small bump
+   Implementation: wrap card.play with a modifier when id ends with _UP.
+*/
+function playUpgradedWrapper(baseCard){
+  // Create a shallow wrapper that bumps numbers in context calls.
+  const basePlay = baseCard.play;
+  return function(ctx){
+    const original = {
+      dealEnemy: ctx.dealEnemy,
+      healPlayer: ctx.healPlayer,
+      addStatus: ctx.addStatus
+    };
+    ctx.dealEnemy = (amt)=> original.dealEnemy(amt + 2);
+    ctx.healPlayer = (amt)=> original.healPlayer(amt + 2);
+    ctx.addStatus = (entity, name, v, d)=>{
+      if(name==="Shield") return original.addStatus(entity, name, v + 2, d);
+      return original.addStatus(entity, name, v, d);
+    };
+    basePlay(ctx);
+    // restore
+    ctx.dealEnemy = original.dealEnemy;
+    ctx.healPlayer = original.healPlayer;
+    ctx.addStatus = original.addStatus;
+  };
+}
+
+// override resolver to return play wrapper if up
+const _getCardById = getCardById;
+function getResolvedCardForId(id){
+  const {card, up} = resolveCardIdMaybeUp(id);
+  if(!up) return {card, up:false};
+  const clone = {...card};
+  clone.play = playUpgradedWrapper(card);
+  clone.name = card.name + "+";
+  return {card: clone, up:true};
+}
+
+// Patch playCardFromHand to use resolved card when hand id ends with _UP
+const _playCardFromHand = playCardFromHand;
+playCardFromHand = function(index, cardEl){
+  // We need to use resolved card and cost from base card (same) for up.
+  // We'll temporarily swap getCardById inside this call.
+  const id = state.hand[index];
+  const {card, up} = getResolvedCardForId(id);
+  // Temporarily run an inline play path using same logic, but with resolved card.
+  if(state.screen!=="battle") return;
+  if(index<0 || index>=state.hand.length) return;
+
+  const cost = effectiveCost(card);
+  if(state.mana < cost){ logBad("Không đủ Mana."); return; }
+
+  state.mana = clamp(state.mana - cost, 0, state.maxMana);
+  state.hand.splice(index,1);
+
+  let delta = {...(card.axis||{E:0,G:0,T:0})};
+  if(state.player.flags.twistedCard === card.id){
+    const comps = [
+      {k:"E", v: Math.abs(delta.E||0)},
+      {k:"G", v: Math.abs(delta.G||0)},
+      {k:"T", v: Math.abs(delta.T||0)}
+    ].sort((a,b)=>b.v-a.v);
+    if(comps[0].v>0){
+      const k = comps[0].k;
+      delta[k] = -(delta[k]||0);
+      logSys(`Hỗn Mang bẻ trục: Axis của '${card.name}' bị đảo ở ${k}.`);
+    } else {
+      delta.E = (delta.E||0) + 3;
+    }
+  }
+
+  if(card.group === state.ancestry && card.group !== GROUPS.NEUTRAL){
+    state.player.flags.fateFromAncestry = state.player.flags.fateFromAncestry||0;
+    if(state.player.flags.fateFromAncestry<2){
+      state.fate = clamp(state.fate + 1, 0, 99);
+      state.player.flags.fateFromAncestry++;
+      logGood("Chơi đúng Tổ Hệ: Fate +1.");
+    }
+  }
+
+  if(card.group === GROUPS.OLYMPIAN) state.player.decreeCount = (state.player.decreeCount||0) + 1;
+
+  applyAxisDelta(delta);
+
+  const ctx = makeCtx();
+
+  let warpFree = false;
+  let warpDouble = false;
+  if(state.player.flags.nextCardWarp && !state.player.flags.warpUsedThisTurn){
+    state.player.flags.warpUsedThisTurn = true;
+    warpFree = !!state.player.flags.warpFree;
+    warpDouble = !!state.player.flags.warpDouble;
+    if(state.player.rift>0) state.player.rift -= 1;
+    state.player.flags.nextCardWarp = false;
+    state.player.flags.warpFree = false;
+    state.player.flags.warpDouble = false;
+
+    if(warpFree){
+      logSys("Đứt Mạch: lá này được miễn cost (đã áp dụng).");
+      for(const rid of state.relics){
+        const r = RELICS.find(x=>x.id===rid);
+        if(r?.onWarpFree) r.onWarpFree(ctx);
+      }
+    } else if(warpDouble){
+      logSys("Đứt Mạch: lá này nhân đôi hiệu ứng (không nhân đôi Axis).");
+    }
+  }
+
+  state.lastPlayedCardId = card.id.endsWith("_UP") ? card.id.slice(0,-3) : card.id;
+  state.player.cardsPlayedLastTurn += 1;
+
+  animatePlayedCard(cardEl);
+
+  ctx.exhausting = false;
+  card.play(ctx);
+  if(warpDouble){
+    const ctx2 = makeCtx();
+    ctx2.exhausting = false;
+    card.play(ctx2);
+  }
+
+  const shouldExhaust = card.id.startsWith("TOK_") || ctx.exhausting || card.id.includes("TOK_");
+  if(shouldExhaust){
+    state.exhaust.push(card.id);
+    logSys(`Exhaust: ${card.name}`);
+  } else {
+    state.discard.push(card.id);
+  }
+
+  if(state.player.decreeCount>=3){
+    triggerDecree();
+    state.player.decreeCount = 0;
+  }
+
+  checkAxisEvents();
+
+  if(state.enemy.hp<=0){ onWinBattle(); return; }
+  if(state.player.hp<=0){ onLoseRun(); return; }
+
+  renderAll();
+};
+
+/* ------------------- Render hand uses upgrade resolver --- */
+const _renderHand = renderHand;
+renderHand = function(){
+  const el = $("#hand");
+  el.innerHTML = "";
+  const locked = state.player.flags.lockedSlots || 0;
+  for(let i=0;i<locked;i++){
+    const ph = document.createElement("div");
+    ph.className = "card frame-NEUTRAL disabled";
+    ph.style.opacity = ".35";
+    ph.style.cursor = "not-allowed";
+    ph.innerHTML = `
+      <div class="cTop">
+        <div>
+          <div class="cName">Xiềng Xích</div>
+          <div class="cGroup">Tartarus</div>
+        </div>
+        <div class="cCost">—</div>
+      </div>
+      <div class="cBody">
+        <div class="art abyss"></div>
+        <div class="cDesc">Một slot bị khóa tạm thời bởi Biến Cố Vực Sâu.</div>
+        <div class="cTags"><span class="tag tT">Khóa</span></div>
+      </div>
+    `;
+    el.appendChild(ph);
+  }
+
+  state.hand.forEach((id, idx)=>{
+    const {card, up} = getResolvedCardForId(id);
+    const cardEl = renderCardEl(card, {up, clickable:true});
+    if(!canPlayCard(card)) cardEl.classList.add("disabled");
+    cardEl.addEventListener("click", ()=> {
+      if(!canPlayCard(card)) return;
+      playCardFromHand(idx, cardEl);
+    });
+    el.appendChild(cardEl);
+  });
+};
+
+/* ------------------- Log initialization ----------------- */
+function bootstrap(){
+  // Default on load: show start screen.
+  showScreen("start");
+  $("#overlay").classList.remove("active");
+}
+bootstrap();
+
+/* =========================================================
+   Notes:
+   - You can expand the card pool by adding more makeCard() entries.
+   - Enemies are simple patterns; tweak maxHP/pattern for balance.
+   - The “Axis events” are intentionally impactful to encourage strategy.
+   ========================================================= */
+</script>
+</body>
+</html>

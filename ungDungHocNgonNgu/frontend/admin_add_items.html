@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Bulk Add Items</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50">
+  <main class="max-w-4xl mx-auto p-6">
+    <h1 class="text-3xl font-extrabold">Thêm từ vựng hàng loạt</h1>
+    <p class="text-slate-500 mt-2">Mỗi dòng: <b>term | reading | meaning | example | tags | level</b></p>
+
+    <div class="bg-white p-6 rounded-2xl shadow mt-6 border border-slate-100">
+      <label class="block text-sm font-bold text-slate-600">Lesson ID</label>
+      <input id="lessonId" class="mt-2 w-full p-3 rounded-xl border bg-slate-50" placeholder="vd: 1" />
+
+      <label class="block text-sm font-bold text-slate-600 mt-4">Bulk lines</label>
+      <textarea id="bulk" class="mt-2 w-full p-3 rounded-xl border bg-slate-50" rows="10"
+        placeholder="わたし | watashi | tôi | わたし は ベトナムじん です。 | lesson1,pronoun | 1"></textarea>
+
+      <div class="mt-5 flex gap-2">
+        <button id="btnAdd" class="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl">Add Bulk</button>
+        <a href="admin_create_lesson.html" class="px-5 py-3 rounded-xl border font-bold bg-white">Tạo Lesson</a>
+      </div>
+
+      <div id="report" class="mt-5 text-sm text-slate-600"></div>
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow transition-all transform translate-y-20 opacity-0 pointer-events-none">
+    <span id="toastMsg"></span>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+    const saved = localStorage.getItem("lastLessonId");
+    if(saved) document.getElementById("lessonId").value = saved;
+
+    document.getElementById("btnAdd").onclick = async ()=>{
+      try{
+        const lessonId = document.getElementById("lessonId").value.trim();
+        const items = parseBulkLines(document.getElementById("bulk").value);
+        if(!lessonId) return toast("Thiếu Lesson ID");
+        if(!items.length) return toast("Không parse được dòng nào (hãy dùng dấu |)");
+
+        const res = await apiPost(`/admin/lessons/${lessonId}/items/bulk`, { items });
+        toast("Xong ✅");
+        document.getElementById("report").innerHTML =
+          `Inserted: <b>${res.inserted}</b> — Skipped (trùng term): <b>${res.skipped}</b>`;
+      }catch(e){ toast("Lỗi: " + e.message); }
+    };
+  </script>
+</body>
+</html>

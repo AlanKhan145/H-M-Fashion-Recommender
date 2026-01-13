@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lesson Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+    body{ font-family:'Quicksand',sans-serif; background:#f8fafc; }
+    .gradient-text{ background:linear-gradient(135deg,#2563eb,#9333ea); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .loader{ border:3px solid #f3f3f3; border-radius:50%; border-top:3px solid #fff; width:22px; height:22px; animation:spin 1s linear infinite;}
+    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+  </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+<header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="bg-gradient-to-tr from-indigo-600 to-purple-600 text-white p-2.5 rounded-xl shadow-lg">
+        <i class="fas fa-flask text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight">Quiz</h1>
+        <p id="subTitle" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">—</p>
+      </div>
+    </div>
+
+    <nav class="hidden md:flex items-center gap-4 text-sm font-bold text-slate-600">
+      <a id="goLesson" href="#" class="hover:text-blue-600 transition"><i class="fas fa-clone mr-2"></i>Flashcards</a>
+      <a href="index.html" class="hover:text-blue-600 transition"><i class="fas fa-list mr-2"></i>Lessons</a>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-10">
+
+  <section class="text-center mb-8">
+    <h2 id="lessonTitle" class="text-4xl md:text-5xl font-extrabold mb-2 gradient-text">—</h2>
+    <p class="text-slate-500 max-w-2xl mx-auto">Quiz theo bộ từ của lesson (MCQ / Typing / Listening).</p>
+  </section>
+
+  <section class="bg-indigo-600 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
+    <div class="absolute bottom-0 right-0 p-10 opacity-10"><i class="fas fa-brain text-[10rem]"></i></div>
+
+    <div class="relative z-10">
+      <div class="flex flex-wrap gap-2 items-center mb-4">
+        <button class="modeBtn px-4 py-2 rounded-xl bg-white/10 border border-white/20 font-bold" data-mode="mcq">MCQ</button>
+        <button class="modeBtn px-4 py-2 rounded-xl bg-white/10 border border-white/20 font-bold" data-mode="typing">Typing</button>
+        <button class="modeBtn px-4 py-2 rounded-xl bg-white/10 border border-white/20 font-bold" data-mode="listening">Listening</button>
+
+        <button id="btnNext" class="ml-auto bg-yellow-400 text-indigo-900 font-extrabold px-6 py-2 rounded-xl hover:bg-yellow-500 transition">
+          Câu tiếp
+        </button>
+      </div>
+
+      <div id="loading" class="hidden items-center gap-2 mb-3">
+        <div class="loader"></div><span class="text-sm font-bold">Đang tải items...</span>
+      </div>
+
+      <div class="bg-white/10 border border-white/20 rounded-2xl p-6">
+        <div id="question" class="font-extrabold text-lg mb-4">—</div>
+
+        <div id="mcqBox" class="space-y-2"></div>
+
+        <div id="typingBox" class="hidden mt-3 flex gap-2">
+          <input id="typingInput" class="flex-1 p-3 rounded-xl text-slate-900" placeholder="Gõ đáp án..." />
+          <button id="btnSubmit" class="bg-white text-indigo-900 font-extrabold px-6 rounded-xl">OK</button>
+        </div>
+
+        <div id="hint" class="text-indigo-100 text-sm mt-4"></div>
+      </div>
+
+      <div class="mt-5 flex gap-2">
+        <button id="btnSpeak" class="px-5 py-3 rounded-xl bg-white text-indigo-900 font-extrabold hidden">
+          <i class="fas fa-volume-up mr-2"></i>Nghe lại
+        </button>
+        <button id="btnShowAnswer" class="px-5 py-3 rounded-xl bg-white/10 border border-white/20 font-bold">
+          Hiện đáp án
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl transition-all transform translate-y-20 opacity-0 pointer-events-none z-[100]">
+  <span id="toastMsg"></span>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+  function getParam(name){
+    const u = new URL(location.href);
+    return u.searchParams.get(name);
+  }
+  function randInt(n){ return Math.floor(Math.random()*n); }
+  function shuffle(a){
+    const b = a.slice();
+    for(let i=b.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [b[i], b[j]] = [b[j], b[i]];
+    }
+    return b;
+  }
+
+  // TTS (simple)
+  let lessonLang = "en";
+  function speak(text){
+    if(!("speechSynthesis" in window)) return toast("Không hỗ trợ TTS.");
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lessonLang;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }
+
+  const lessonId = getParam("lesson_id");
+  if(!lessonId) toast("Thiếu lesson_id");
+
+  let items = [];
+  let mode = "mcq";
+  let current = null; // current item
+
+  async function loadLessonAndItems(){
+    const loading = document.getElementById("loading");
+    loading.classList.remove("hidden"); loading.classList.add("flex");
+    try{
+      const lesson = await apiGet(`/lessons/${encodeURIComponent(lessonId)}`);
+      lessonLang = lesson.lang;
+      document.getElementById("lessonTitle").textContent = lesson.title;
+      document.getElementById("subTitle").textContent = `${lesson.lang} • lesson #${lesson.id}`;
+      document.getElementById("goLesson").href = `lesson.html?lesson_id=${encodeURIComponent(lesson.id)}`;
+
+      // load all items
+      items = await apiGet(`/lessons/${encodeURIComponent(lessonId)}/items?limit=2000&sort=new`);
+      if(items.length < 2) toast("Lesson cần ít nhất 2 items để quiz tốt.");
+      nextQuestion();
+    }catch(e){
+      toast("Lỗi: " + e.message);
+    }finally{
+      loading.classList.add("hidden"); loading.classList.remove("flex");
+    }
+  }
+
+  function renderMCQ(correctItem){
+    const question = `Chọn từ đúng cho nghĩa: “${correctItem.meaning}”`;
+    document.getElementById("question").textContent = question;
+
+    const pool = items.filter(x => x.id !== correctItem.id);
+    const distract = shuffle(pool).slice(0, Math.min(3, pool.length)).map(x=>x.term);
+    const opts = shuffle([...distract, correctItem.term]);
+
+    const box = document.getElementById("mcqBox");
+    box.innerHTML = "";
+    opts.forEach(opt=>{
+      const b = document.createElement("button");
+      b.className = "w-full bg-white/10 hover:bg-white/20 p-3 rounded-xl text-left transition-all text-sm border border-white/10 font-bold";
+      b.textContent = opt;
+      b.onclick = ()=>{
+        if(opt === correctItem.term){
+          toast("Chính xác! 🎉");
+          nextQuestion();
+        }else{
+          toast("Sai 💡 Đáp án: " + correctItem.term);
+        }
+      };
+      box.appendChild(b);
+    });
+
+    document.getElementById("mcqBox").classList.remove("hidden");
+    document.getElementById("typingBox").classList.add("hidden");
+    document.getElementById("btnSpeak").classList.add("hidden");
+    document.getElementById("hint").textContent = "";
+  }
+
+  function renderTyping(correctItem, isListening=false){
+    document.getElementById("question").textContent =
+      isListening ? "Nghe phát âm và gõ từ đúng." : `Gõ từ (${lessonLang}) cho nghĩa: “${correctItem.meaning}”`;
+
+    document.getElementById("mcqBox").classList.add("hidden");
+    document.getElementById("typingBox").classList.remove("hidden");
+
+    const btnSpeak = document.getElementById("btnSpeak");
+    if(isListening){
+      btnSpeak.classList.remove("hidden");
+      btnSpeak.onclick = ()=> speak(correctItem.term);
+      speak(correctItem.term);
+      document.getElementById("hint").textContent = "Tip: bấm “Nghe lại” nếu cần.";
+    }else{
+      btnSpeak.classList.add("hidden");
+      document.getElementById("hint").textContent = "";
+    }
+
+    document.getElementById("btnSubmit").onclick = ()=>{
+      const inp = document.getElementById("typingInput");
+      const ans = (inp.value||"").trim();
+      inp.value = "";
+      if(ans === correctItem.term){
+        toast("Đúng 🎉");
+        nextQuestion();
+      }else{
+        toast("Sai 💡 Đáp án: " + correctItem.term);
+      }
+    };
+  }
+
+  function nextQuestion(){
+    if(!items.length) return;
+    current = items[randInt(items.length)];
+
+    if(mode === "mcq") renderMCQ(current);
+    else if(mode === "typing") renderTyping(current, false);
+    else renderTyping(current, true); // listening
+  }
+
+  document.querySelectorAll(".modeBtn").forEach(btn=>{
+    btn.onclick = ()=>{
+      mode = btn.dataset.mode;
+      toast("Mode: " + mode);
+      nextQuestion();
+    };
+  });
+
+  document.getElementById("btnNext").onclick = nextQuestion;
+  document.getElementById("btnShowAnswer").onclick = ()=>{
+    if(!current) return;
+    toast("Đáp án: " + current.term);
+  };
+
+  loadLessonAndItems();
+</script>
+</body>
+</html>

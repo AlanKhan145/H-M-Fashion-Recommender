@@ -1,0 +1,5 @@
+artifacts_dir: "artifacts"
+data_dir: "artifacts/data"
+reports_dir: "artifacts/reports"
+dataset_path_file: "artifacts/data/dataset_path.txt"
+stats_json: "artifacts/data/DATA_STATS_train.json"

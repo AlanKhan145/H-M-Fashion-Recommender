@@ -1,0 +1,10 @@
+k_patch: 11
+max_train_batches: 600
+batch_train: 256
+train_pos: 512
+train_neg: 512
+
+n_estimators: 600
+max_depth: 32
+min_samples_leaf: 2
+max_features: "log2"   # FIX lỗi '0.5' string

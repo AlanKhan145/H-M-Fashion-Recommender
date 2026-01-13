@@ -1,0 +1,10 @@
+run:
+  download_data: true
+  compute_stats: true
+  gnn_hpo: true
+  gnn_final: true
+  lr: true
+  rf: true
+  threshold_sweep: true
+  ablation: true
+  visualize: true

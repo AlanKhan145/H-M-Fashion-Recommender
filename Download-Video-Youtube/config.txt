@@ -1,0 +1,11 @@
+# output folder
+out_dir=./downloads
+
+# cookies (optional)
+cookies=./cookies.txt
+
+# urls file
+urls_file=./urls.txt
+
+# optional: PO token (để trống nếu không dùng)
+po_token=
